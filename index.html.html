@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام إدارة الفعاليات الرياضية</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
+:root{
+  --green:#0a7c3e;--green2:#0fa854;--gold:#c9a227;
+  --dark:#0d1b12;--mid:#1a2e20;--panel:#162219;--card:#1e2e23;
+  --border:#2a3e2e;--text:#e8f0ea;--muted:#8aab90;--white:#fff;
+  --red:#e03535;--blue:#3a86d4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;direction:rtl}
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+
+/* LOGIN */
+#loginScreen{align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#1a3320 0%,var(--dark) 70%)}
+.login-box{background:var(--panel);border:1px solid var(--border);border-radius:24px;padding:40px 36px;width:100%;max-width:420px;text-align:center}
+.login-logo{font-size:3rem;margin-bottom:8px}
+.login-box h2{font-size:1.3rem;font-weight:900;color:var(--white);margin-bottom:4px}
+.login-box p{font-size:.8rem;color:var(--muted);margin-bottom:22px}
+.role-tabs{display:flex;gap:6px;margin-bottom:18px;background:var(--card);border-radius:12px;padding:4px}
+.role-tab{flex:1;padding:8px 4px;border:none;border-radius:9px;font-family:'Cairo',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;background:transparent;color:var(--muted);transition:all .2s}
+.role-tab.active{background:var(--green);color:var(--white)}
+.login-err{color:var(--red);font-size:.78rem;margin-top:6px;display:none}
+.btn-login{width:100%;padding:12px;background:linear-gradient(135deg,var(--green),var(--green2));color:var(--white);border:none;border-radius:12px;font-family:'Cairo',sans-serif;font-size:.95rem;font-weight:800;cursor:pointer;margin-top:4px}
+
+/* COMMON INPUTS */
+.inp{width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:9px;font-family:'Cairo',sans-serif;font-size:.85rem;outline:none;margin-bottom:9px;transition:border .2s}
+.inp:focus{border-color:var(--green2)}
+.inp::placeholder{color:var(--muted)}
+select.inp option{background:var(--card)}
+
+/* HEADER */
+header{background:linear-gradient(135deg,var(--dark),var(--mid));border-bottom:2px solid var(--green);padding:11px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:50;box-shadow:0 2px 14px rgba(0,0,0,.4)}
+.hlogo{display:flex;align-items:center;gap:10px}
+.hlogo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--green),var(--green2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px}
+.hlogo h1{font-size:.92rem;font-weight:900;color:var(--white)}
+.hlogo p{font-size:.63rem;color:var(--gold)}
+.hright{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.user-badge{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:20px;padding:5px 11px;font-size:.73rem;color:var(--muted)}
+.user-badge span{color:var(--gold);font-weight:700}
+.btn-out{background:rgba(224,53,53,.12);border:1px solid rgba(224,53,53,.3);color:var(--red);padding:5px 11px;border-radius:20px;font-family:'Cairo',sans-serif;font-size:.7rem;font-weight:700;cursor:pointer}
+
+/* NAV */
+.nav-tabs{background:var(--panel);border-bottom:1px solid var(--border);display:flex;gap:3px;padding:6px 14px;overflow-x:auto}
+.nav-tab{padding:6px 14px;border:none;border-radius:8px;font-family:'Cairo',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer;background:transparent;color:var(--muted);white-space:nowrap;transition:all .2s}
+.nav-tab.active,.nav-tab:hover{background:var(--green);color:var(--white)}
+
+/* MAIN */
+.main{flex:1;padding:18px 16px;max-width:1360px;margin:0 auto;width:100%}
+.sec-card{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:18px;margin-bottom:14px}
+.sec-title{font-size:.92rem;font-weight:800;color:var(--white);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+
+/* FORM */
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.fg label{font-size:.67rem;color:var(--muted);font-weight:700}
+.fg .inp{margin-bottom:0}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.form-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:10px}
+
+/* BUTTONS */
+.btn{font-family:'Cairo',sans-serif;font-size:.76rem;font-weight:700;padding:8px 16px;border-radius:8px;cursor:pointer;border:none;transition:all .2s;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--green),var(--green2));color:var(--white);box-shadow:0 2px 8px rgba(10,124,62,.25)}
+.btn-secondary{background:var(--card);border:1px solid var(--border);color:var(--muted)}
+.btn-secondary:hover{color:var(--text)}
+.btn-danger{background:rgba(224,53,53,.1);border:1px solid rgba(224,53,53,.22);color:var(--red)}
+.btn-gold{background:rgba(201,162,39,.1);border:1px solid rgba(201,162,39,.28);color:var(--gold)}
+.btn-blue{background:rgba(58,134,212,.1);border:1px solid rgba(58,134,212,.28);color:#7ab8f5}
+.btn-sm{padding:4px 10px;font-size:.68rem;border-radius:6px}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.76rem}
+thead tr{background:var(--card);border-bottom:2px solid var(--green)}
+thead th{padding:9px 10px;text-align:right;color:var(--muted);font-weight:700;font-size:.65rem;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+tbody tr:hover{background:rgba(10,124,62,.05)}
+tbody tr:last-child{border-bottom:none}
+td{padding:8px 10px;vertical-align:middle}
+
+/* BADGE */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.63rem;font-weight:700;white-space:nowrap}
+.bg{background:rgba(10,124,62,.18);color:#66bb6a;border:1px solid rgba(10,124,62,.28)}
+.bo{background:rgba(201,162,39,.1);color:var(--gold);border:1px solid rgba(201,162,39,.22)}
+.bb{background:rgba(58,134,212,.1);color:#7ab8f5;border:1px solid rgba(58,134,212,.22)}
+.bm{background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--border)}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;margin-bottom:14px}
+.scard{background:var(--panel);border:1px solid var(--border);border-right:3px solid var(--ac,var(--green));border-radius:10px;padding:11px 13px}
+.snum{font-size:1.7rem;font-weight:900;color:var(--ac,var(--green2));line-height:1}
+.slab{font-size:.62rem;color:var(--muted);margin-top:2px;font-weight:600}
+
+/* MODAL */
+.moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;padding:12px}
+.moverlay.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:16px;width:100%;max-width:680px;max-height:93vh;overflow-y:auto;animation:su .2s ease}
+@keyframes su{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mhead{background:linear-gradient(135deg,var(--mid),var(--card));border-bottom:2px solid var(--green);border-radius:16px 16px 0 0;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
+.mhead h3{font-size:.92rem;font-weight:900;color:var(--white)}
+.mhead p{font-size:.7rem;color:var(--muted);margin-top:2px}
+.xbtn{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--muted);width:28px;height:28px;border-radius:7px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.xbtn:hover{background:rgba(224,53,53,.14);color:var(--red)}
+.mbody{padding:18px 20px}
+.mfoot{padding:11px 20px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;position:sticky;bottom:0;background:var(--panel);border-radius:0 0 16px 16px}
+
+/* TYPE SELECTOR */
+.type-btn{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 24px;border-radius:12px;cursor:pointer;border:2px solid;transition:all .2s;font-family:'Cairo',sans-serif;font-weight:800;font-size:.88rem}
+.type-btn:hover{transform:translateY(-2px)}
+
+/* FIELD ITEM */
+.field-item{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:10px 13px;display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.fi-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.82rem;flex-shrink:0}
+.fi-info{flex:1}
+.fi-name{font-size:.8rem;font-weight:700;color:var(--text)}
+.fi-type{font-size:.63rem;color:var(--muted);margin-top:1px}
+.fi-fixed{background:rgba(10,124,62,.1);border:1px solid rgba(10,124,62,.2);border-radius:4px;font-size:.58rem;color:var(--green2);padding:1px 5px;font-weight:700;margin-right:5px}
+
+/* DYNAMIC FIELDS */
+.dyn-label{font-size:.68rem;font-weight:700;color:var(--muted);margin-bottom:4px}
+.req{color:var(--red)}
+.yesno{display:flex;gap:10px}
+.yesno label{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:.78rem;color:var(--muted);padding:7px 14px;background:var(--card);border:1px solid var(--border);border-radius:7px;transition:all .2s}
+.yesno label:has(input:checked){border-color:var(--green2);color:var(--green2);background:rgba(10,124,62,.08)}
+
+/* EVENT CARDS */
+.ev-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:13px 15px;margin-bottom:9px}
+.ev-card.done{border-right:3px solid var(--green2)}
+.ev-card.pending{border-right:3px solid var(--gold)}
+.ev-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:7px}
+.ev-title{font-size:.86rem;font-weight:800;color:var(--white)}
+.ev-meta{display:flex;flex-wrap:wrap;gap:6px;font-size:.68rem;color:var(--muted);margin-bottom:9px}
+.upload-zone{border:2px dashed var(--border);border-radius:9px;padding:16px;text-align:center;cursor:pointer;transition:border .2s}
+.upload-zone:hover{border-color:var(--green2)}
+.ufile{background:rgba(10,124,62,.07);border:1px solid rgba(10,124,62,.2);border-radius:9px;padding:10px 13px;display:flex;align-items:center;gap:9px}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);color:var(--white);padding:10px 24px;border-radius:50px;font-family:'Cairo',sans-serif;font-weight:700;font-size:.8rem;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.4);display:none;white-space:nowrap}
+.empty{text-align:center;padding:40px 14px;color:var(--muted)}
+.empty .icon{font-size:2rem;margin-bottom:7px}
+
+/* SECTION DIVIDER */
+.sdiv{font-size:.7rem;font-weight:800;color:var(--gold);padding:8px 0 6px;border-top:1px solid var(--border);margin-top:12px;display:flex;align-items:center;gap:6px}
+.sdiv::after{content:'';flex:1;height:1px;background:var(--border)}
+
+@media print{header,.nav-tabs,.mfoot,.btn,.hright,.toast{display:none!important}body{background:#fff;color:#000}}
+@media(max-width:620px){.form-grid{grid-template-columns:1fr}.stats-row{grid-template-columns:1fr 1fr}.type-btn{padding:12px 16px}}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div class="screen active" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🏆</div>
+    <h2>نظام إدارة الفعاليات الرياضية</h2>
+    <p>وزارة الرياضة – المنطقة الشرقية</p>
+    <div class="role-tabs">
+      <button class="role-tab active" onclick="setRole('admin',this)">👤 المدير</button>
+      <button class="role-tab" onclick="setRole('staff',this)">🖥 الموظف</button>
+      <button class="role-tab" onclick="setRole('supervisor',this)">📋 المكلف</button>
+    </div>
+    <div id="rf-admin"><input class="inp" type="password" id="adminPass" placeholder="كلمة مرور المدير"/></div>
+    <div id="rf-staff" style="display:none">
+      <input class="inp" type="text" id="staffUser" placeholder="اسم المستخدم"/>
+      <input class="inp" type="password" id="staffPass" placeholder="كلمة المرور"/>
+    </div>
+    <div id="rf-supervisor" style="display:none">
+      <input class="inp" type="text" id="supCode" placeholder="أدخل كودك (مثال: S001)"/>
+    </div>
+    <button class="btn-login" onclick="doLogin()">دخول</button>
+    <div class="login-err" id="loginErr">❌ بيانات خاطئة</div>
+  </div>
+</div>
+
+<!-- ══ ADMIN ══ -->
+<div class="screen" id="adminScreen">
+  <header>
+    <div class="hlogo"><div class="hlogo-icon">🏆</div><div><h1>لوحة تحكم المدير</h1><p id="syncStatus">إدارة الفعاليات والمكلفين</p></div></div>
+    <div class="hright">
+      <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:20px;padding:4px 12px">
+        <span style="font-size:.65rem;color:var(--muted)">الموسم:</span>
+        <select id="seasonSelector" onchange="switchSeason(this.value)" style="background:transparent;border:none;color:var(--gold);font-family:Cairo,sans-serif;font-size:.8rem;font-weight:700;outline:none;cursor:pointer"></select>
+      </div>
+      <button class="btn btn-sm btn-gold" onclick="saveToFile()" title="حفظ البيانات كملف">💾 حفظ</button>
+      <label class="btn btn-sm btn-blue" style="cursor:pointer" title="استيراد بيانات محفوظة">
+        📂 استيراد<input type="file" accept=".json" style="display:none" onchange="loadFromFile(event)"/>
+      </label>
+      <div class="user-badge" id="fbStatus">☁️ <span>غير متصل</span></div>
+      <div class="user-badge">مرحباً <span>المدير</span></div>
+      <button class="btn-out" onclick="logout()">خروج</button>
+    </div>
+  </header>
+  <div class="nav-tabs" id="adminNav">
+    <button class="nav-tab active" onclick="showTab('admin','events',this)">📅 الفعاليات</button>
+    <button class="nav-tab" onclick="showTab('admin','supervisors',this)">👥 المكلفون</button>
+    <button class="nav-tab" onclick="showTab('admin','staff',this)">🖥 الموظفون</button>
+    <button class="nav-tab" onclick="showTab('admin','reports',this)">📊 التقارير</button>
+    <button class="nav-tab" onclick="showTab('admin','stats',this)">📈 التقرير الإحصائي</button>
+    <button class="nav-tab" onclick="showTab('admin','fields',this)">🔧 إدارة الحقول</button>
+    <button class="nav-tab" onclick="showTab('admin','seasons',this)">🗂 المواسم</button>
+    <button class="nav-tab" onclick="showTab('admin','settings',this)">⚙️ الإعدادات</button>
+  </div>
+  <div class="main">
+
+    <!-- EVENTS TAB -->
+    <div id="admin-tab-events">
+      <div class="stats-row" id="adminStats"></div>
+      <div class="sec-card">
+        <div class="sec-title">➕ إضافة فعالية جديدة</div>
+        <div id="typeSelector">
+          <p style="font-size:.76rem;color:var(--muted);margin-bottom:12px">اختر نوع الفعالية:</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="type-btn" style="background:rgba(102,187,106,.1);border-color:rgba(102,187,106,.3);color:#66bb6a" onclick="selectType('admin','sports')">🏅<span>رياضة</span></button>
+            <button class="type-btn" style="background:rgba(201,162,39,.08);border-color:rgba(201,162,39,.25);color:var(--gold)" onclick="selectType('admin','event')">🎪<span>فعالية</span></button>
+          </div>
+        </div>
+        <div id="evForm" style="display:none">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+            <span id="evTypeBadge" class="badge" style="font-size:.8rem;padding:4px 12px"></span>
+            <button class="btn btn-sm btn-secondary" onclick="resetType('admin')">← تغيير النوع</button>
+          </div>
+          <!-- حقول ثابتة دائماً -->
+          <div class="form-grid">
+            <div class="fg"><label>المكلف المسؤول</label><select class="inp" id="ev_sup" style="margin:0"><option value="">— اختر —</option></select></div>
+            <div class="fg"><label>اليوم</label>
+              <select class="inp" id="ev_day" style="margin:0">
+                <option>الأحد</option><option>الاثنين</option><option>الثلاثاء</option><option>الأربعاء</option><option>الخميس</option><option>الجمعة</option><option>السبت</option>
+              </select>
+            </div>
+            <div class="fg"><label>تاريخ البداية</label><input class="inp" type="date" id="ev_date" style="margin:0"/></div><div class="fg"><label>تاريخ النهاية</label><input class="inp" type="date" id="ev_date_to" style="margin:0"/></div>
+            <div class="fg"><label>الوقت</label><input class="inp" type="time" id="ev_time" style="margin:0"/></div>
+          </div>
+          <!-- حقول ثابتة + إضافية حسب النوع -->
+          <div id="evDynFields" style="margin-top:12px"></div>
+          <div class="form-row">
+            <button class="btn btn-primary" onclick="addEvent('admin')">✅ إضافة</button>
+            <button class="btn btn-secondary" onclick="resetType('admin')">مسح</button>
+          </div>
+        </div>
+      </div>
+      <div class="sec-card">
+        <div class="sec-title">📅 قائمة الفعاليات</div>
+        <!-- شريط الفرز والتصفية -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+          <span style="font-size:.72rem;color:var(--muted);font-weight:700">🔃 ترتيب:</span>
+          <select class="inp" id="sortBy_admin" onchange="renderEvTable('admin')" style="margin:0;width:auto;padding:6px 12px;font-size:.76rem">
+            <option value="date_asc">📅 الأقرب أولاً</option>
+            <option value="date_desc">📅 الأبعد أولاً</option>
+            <option value="day">📆 اليوم</option>
+            <option value="sport">🏅 اللعبة</option>
+            <option value="actType">🏆 نوع النشاط</option>
+            <option value="status">✅ حالة التقرير</option>
+          </select>
+          <span style="font-size:.72rem;color:var(--muted);font-weight:700">🔍 بحث:</span>
+          <input class="inp" id="searchEv_admin" onkeyup="renderEvTable('admin')" placeholder="اللعبة / الفريق / الموقع..." style="margin:0;width:200px;padding:6px 12px;font-size:.76rem"/>
+          <span style="font-size:.72rem;color:var(--muted);font-weight:700">📆 من:</span>
+          <input class="inp" type="date" id="filterFrom_admin" onchange="renderEvTable('admin')" style="margin:0;width:150px;padding:6px 12px;font-size:.76rem"/>
+          <span style="font-size:.72rem;color:var(--muted);font-weight:700">إلى:</span>
+          <input class="inp" type="date" id="filterTo_admin" onchange="renderEvTable('admin')" style="margin:0;width:150px;padding:6px 12px;font-size:.76rem"/>
+          <button class="btn btn-sm btn-danger" onclick="clearDateFilter('admin')">✕ مسح</button>
+        </div>
+        <div id="filterBadge_admin" style="margin-bottom:10px;display:none"></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr id="evTblHead"></tr></thead>
+          <tbody id="eventsBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- SUPERVISORS TAB -->
+    <div id="admin-tab-supervisors" style="display:none">
+      <div class="sec-card">
+        <div class="sec-title">➕ إضافة مكلف</div>
+        <div class="form-grid">
+          <div class="fg"><label>الكود</label><input class="inp" id="sup_code" placeholder="S001"/></div>
+          <div class="fg"><label>الاسم</label><input class="inp" id="sup_name" placeholder="اسم المكلف"/></div>
+          <div class="fg"><label>الجوال</label><input class="inp" id="sup_phone" placeholder="05xxxxxxxx"/></div>
+          <div class="fg"><label>الفرع</label><input class="inp" id="sup_branch" placeholder="الفرع"/></div>
+        </div>
+        <div class="form-row"><button class="btn btn-primary" onclick="addSup()">✅ إضافة</button></div>
+      </div>
+      <div class="sec-card">
+        <div class="sec-title">👥 المكلفون</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>الكود</th><th>الاسم</th><th>الجوال</th><th>الفرع</th><th>فعالياته</th><th>مكتملة</th><th>حذف</th></tr></thead>
+          <tbody id="supsBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- STAFF TAB -->
+    <div id="admin-tab-staff" style="display:none">
+      <div class="sec-card">
+        <div class="sec-title">➕ إضافة موظف</div>
+        <div class="form-grid">
+          <div class="fg"><label>الاسم</label><input class="inp" id="st_name" placeholder="اسم الموظف"/></div>
+          <div class="fg"><label>المستخدم</label><input class="inp" id="st_user" placeholder="username"/></div>
+          <div class="fg"><label>كلمة المرور</label><input class="inp" type="password" id="st_pass" placeholder="كلمة المرور"/></div>
+          <div class="fg"><label>الصلاحية</label>
+            <select class="inp" id="st_role">
+              <option value="editor">✏️ محرر</option>
+              <option value="viewer">👁 قارئ</option>
+            </select>
+          </div>
+          <div class="fg"><label>القسم</label><input class="inp" id="st_dept" placeholder="القسم"/></div>
+        </div>
+        <div class="form-row"><button class="btn btn-primary" onclick="addStaff()">✅ إضافة</button></div>
+      </div>
+      <div class="sec-card">
+        <div class="sec-title">🖥 الموظفون</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>الاسم</th><th>المستخدم</th><th>الصلاحية</th><th>القسم</th><th>تغيير</th><th>حذف</th></tr></thead>
+          <tbody id="staffBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- REPORTS TAB -->
+    <div id="admin-tab-reports" style="display:none">
+      <div class="stats-row" id="repStats"></div>
+      <div class="sec-card">
+        <div class="sec-title">📊 التقارير المرفوعة</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>#</th><th>الفعالية</th><th>المكلف</th><th>الملف</th><th>وقت الرفع</th><th>الحالة</th><th>إجراء</th></tr></thead>
+          <tbody id="reportsBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- FIELDS TAB -->
+    <div id="admin-tab-fields" style="display:none">
+      <!-- نوع selector -->
+      <div class="sec-card" style="padding:12px 18px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:.76rem;font-weight:700;color:var(--muted)">نوع الفعالية:</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm" id="ftab-sports" onclick="showFType('sports')">🏅 رياضة</button>
+            <button class="btn btn-sm" id="ftab-event"  onclick="showFType('event')">🎪 فعالية</button>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px" id="fieldsCols">
+        <!-- حقول الفعالية -->
+        <div class="sec-card">
+          <div class="sec-title" id="fEvTitle">📝 حقول الفعالية</div>
+          <p style="font-size:.7rem;color:var(--muted);margin-bottom:10px">تظهر عند إضافة / تعديل الفعالية</p>
+          <!-- ثابتة -->
+          <div style="font-size:.68rem;font-weight:800;color:var(--green2);margin-bottom:6px">🔒 الحقول الثابتة</div>
+          <div id="fixedEvList"></div>
+          <button class="btn btn-gold btn-sm" style="margin-top:6px;margin-bottom:12px" onclick="openFModal('event','fixed')">➕ إضافة حقل ثابت</button>
+          <!-- إضافية -->
+          <div style="font-size:.68rem;font-weight:800;color:var(--blue);margin-bottom:6px;margin-top:4px">✨ الحقول الإضافية</div>
+          <div id="extraEvList"></div>
+          <button class="btn btn-blue btn-sm" style="margin-top:6px" onclick="openFModal('event','extra')">➕ إضافة حقل إضافي</button>
+        </div>
+        <!-- حقول التقرير -->
+        <div class="sec-card">
+          <div class="sec-title" id="fRepTitle">📋 حقول التقرير</div>
+          <p style="font-size:.7rem;color:var(--muted);margin-bottom:10px">يملأها المكلف عند رفع التقرير</p>
+          <div style="font-size:.68rem;font-weight:800;color:var(--green2);margin-bottom:6px">🔒 الحقول الثابتة</div>
+          <div id="fixedRepList"></div>
+          <button class="btn btn-gold btn-sm" style="margin-top:6px;margin-bottom:12px" onclick="openFModal('report','fixed')">➕ إضافة حقل ثابت</button>
+          <div style="font-size:.68rem;font-weight:800;color:var(--blue);margin-bottom:6px;margin-top:4px">✨ الحقول الإضافية</div>
+          <div id="extraRepList"></div>
+          <button class="btn btn-blue btn-sm" style="margin-top:6px" onclick="openFModal('report','extra')">➕ إضافة حقل إضافي</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <!-- STATS TAB -->
+    <div id="admin-tab-stats" style="display:none">
+      <!-- شريط التحكم -->
+      <div class="sec-card" style="padding:14px 18px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:.76rem;font-weight:700;color:var(--muted)">📆 فلتر الفترة:</span>
+          <input class="inp" type="date" id="statsFrom" onchange="renderStats()" style="margin:0;width:150px;padding:6px 12px;font-size:.76rem"/>
+          <span style="font-size:.72rem;color:var(--muted)">إلى</span>
+          <input class="inp" type="date" id="statsTo" onchange="renderStats()" style="margin:0;width:150px;padding:6px 12px;font-size:.76rem"/>
+          <button class="btn btn-sm btn-danger" onclick="clearStats()">✕ مسح</button>
+          <button class="btn btn-sm btn-primary" onclick="exportToExcel()" style="margin-right:auto">📥 تصدير Excel</button>
+        </div>
+      </div>
+
+      <!-- بطاقات الإجماليات -->
+      <div class="stats-row" id="statsCards" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))"></div>
+
+      <!-- توزيع حسب اللعبة -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px" id="statsGridCols">
+        <div class="sec-card">
+          <div class="sec-title">🏅 توزيع حسب اللعبة</div>
+          <div id="statsBySport"></div>
+        </div>
+        <div class="sec-card">
+          <div class="sec-title">🏆 توزيع حسب نوع النشاط</div>
+          <div id="statsByActType"></div>
+        </div>
+        <div class="sec-card">
+          <div class="sec-title">👤 توزيع حسب الجنس</div>
+          <div id="statsByGender"></div>
+        </div>
+        <div class="sec-card">
+          <div class="sec-title">📋 أداء المكلفين</div>
+          <div id="statsBySup"></div>
+        </div>
+      </div>
+
+      <!-- الجدول الشامل -->
+      <div class="sec-card">
+        <div class="sec-title">📋 جدول شامل بجميع الفعاليات</div>
+        <div id="statsCount" style="font-size:.75rem;color:var(--muted);margin-bottom:10px"></div>
+        <div class="tbl-wrap">
+          <table id="statsTable">
+            <thead><tr id="statsTableHead"></tr></thead>
+            <tbody id="statsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEASONS TAB -->
+    <div id="admin-tab-seasons" style="display:none">
+      <div class="sec-card" style="max-width:600px">
+        <div class="sec-title">➕ إضافة موسم جديد</div>
+        <div class="form-grid">
+          <div class="fg"><label>اسم الموسم</label><input class="inp" id="sn_name" placeholder="مثال: 2026/2027"/></div>
+          <div class="fg"><label>تاريخ البداية</label><input class="inp" type="date" id="sn_from"/></div>
+          <div class="fg"><label>تاريخ النهاية</label><input class="inp" type="date" id="sn_to"/></div>
+        </div>
+        <div class="form-row">
+          <button class="btn btn-primary" onclick="addSeason()">✅ إضافة الموسم</button>
+        </div>
+      </div>
+      <div class="sec-card">
+        <div class="sec-title">🗂 جميع المواسم</div>
+        <div id="seasonsList"></div>
+      </div>
+    </div>
+
+    <div id="admin-tab-settings" style="display:none">
+      <!-- كلمة المرور -->
+      <div class="sec-card" style="max-width:440px">
+        <div class="sec-title">🔐 تغيير كلمة مرور المدير</div>
+        <div class="fg"><label>الحالية</label><input class="inp" type="password" id="cp_cur" placeholder="كلمة المرور الحالية"/></div>
+        <div class="fg"><label>الجديدة</label><input class="inp" type="password" id="cp_new" placeholder="كلمة المرور الجديدة"/></div>
+        <div class="fg"><label>تأكيد</label><input class="inp" type="password" id="cp_cnf" placeholder="تأكيد كلمة المرور"/></div>
+        <div id="cp_msg" style="font-size:.76rem;min-height:16px;margin-bottom:8px"></div>
+        <button class="btn btn-primary" onclick="changePass()">🔐 تغيير</button>
+      </div>
+
+      <!-- الحفظ والاستيراد -->
+      <div class="sec-card" style="max-width:560px">
+        <div class="sec-title">💾 حفظ واستيراد البيانات (محلي)</div>
+        <p style="font-size:.74rem;color:var(--muted);margin-bottom:14px;line-height:1.6">
+          احفظ كل البيانات كملف JSON على جهازك، ثم استوردها لاحقاً أو على جهاز آخر.
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="saveToFile()">💾 حفظ البيانات الآن</button>
+          <label class="btn btn-secondary" style="cursor:pointer">
+            📂 استيراد ملف محفوظ
+            <input type="file" accept=".json" style="display:none" onchange="loadFromFile(event)"/>
+          </label>
+        </div>
+        <div id="backupInfo" style="margin-top:10px;font-size:.72rem;color:var(--muted)"></div>
+      </div>
+
+      <!-- Firebase -->
+      <div class="sec-card" style="max-width:560px">
+        <div class="sec-title">☁️ التخزين السحابي (Firebase)</div>
+        <p style="font-size:.74rem;color:var(--muted);margin-bottom:14px;line-height:1.6">
+          يتيح مزامنة البيانات فورياً بين كل المستخدمين. احصل على مفاتيح Firebase من
+          <a href="https://console.firebase.google.com" target="_blank" style="color:var(--gold)">console.firebase.google.com</a>
+          ثم أدخلها هنا.
+        </p>
+        <div class="form-grid">
+          <div class="fg"><label>API Key</label><input class="inp" id="fb_apiKey" placeholder="AIzaSy..." style="font-family:monospace;font-size:.75rem"/></div>
+          <div class="fg"><label>Project ID</label><input class="inp" id="fb_projectId" placeholder="my-project-id" style="font-family:monospace;font-size:.75rem"/></div>
+          <div class="fg"><label>Auth Domain</label><input class="inp" id="fb_authDomain" placeholder="my-project.firebaseapp.com" style="font-family:monospace;font-size:.75rem"/></div>
+          <div class="fg"><label>Database URL</label><input class="inp" id="fb_dbUrl" placeholder="https://my-project-default-rtdb.firebaseio.com" style="font-family:monospace;font-size:.75rem"/></div>
+        </div>
+        <div id="fb_msg" style="font-size:.76rem;min-height:16px;margin-bottom:10px"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="connectFirebase()">🔌 اتصال بـ Firebase</button>
+          <button class="btn btn-secondary" id="fbSyncBtn" onclick="syncToFirebase()" style="display:none">☁️ رفع البيانات الآن</button>
+          <button class="btn btn-secondary" id="fbPullBtn" onclick="pullFromFirebase()" style="display:none">⬇️ جلب من السحابة</button>
+          <button class="btn btn-danger btn-sm" id="fbDisconnectBtn" onclick="disconnectFirebase()" style="display:none">قطع الاتصال</button>
+        </div>
+        <div id="fbSyncInfo" style="margin-top:10px;font-size:.72rem;color:var(--muted)"></div>
+
+        <!-- دليل الإعداد -->
+        <details style="margin-top:16px">
+          <summary style="font-size:.76rem;color:var(--gold);cursor:pointer;font-weight:700">📖 كيف أحصل على مفاتيح Firebase؟</summary>
+          <div style="margin-top:10px;font-size:.73rem;color:var(--muted);line-height:1.8;background:var(--card);border-radius:8px;padding:12px">
+            1. اذهب لـ <strong style="color:var(--text)">console.firebase.google.com</strong><br/>
+            2. اضغط <strong style="color:var(--text)">"إضافة مشروع"</strong> وأدخل اسمه<br/>
+            3. من القائمة الجانبية → <strong style="color:var(--text)">Realtime Database</strong> → إنشاء قاعدة بيانات<br/>
+            4. اختر <strong style="color:var(--text)">"Start in test mode"</strong><br/>
+            5. من إعدادات المشروع ⚙️ → <strong style="color:var(--text)">"Web App"</strong> → انسخ الـ config<br/>
+            6. الصق المفاتيح في الحقول أعلاه واضغط "اتصال"
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STAFF ══ -->
+<div class="screen" id="staffScreen">
+  <header>
+    <div class="hlogo"><div class="hlogo-icon">🖥</div><div><h1 id="staffTitle">لوحة الموظف</h1><p id="staffRoleLbl">—</p></div></div>
+    <div class="hright"><div class="user-badge" id="staffBadge">المستخدم: <span>—</span></div><button class="btn-out" onclick="logout()">خروج</button></div>
+  </header>
+  <div class="nav-tabs" id="staffNav">
+    <button class="nav-tab active" onclick="showTab('staff','events',this)">📅 الفعاليات</button>
+    <button class="nav-tab" onclick="showTab('staff','reports',this)">📊 التقارير</button>
+  </div>
+  <div class="main">
+    <div id="staff-tab-events">
+      <div class="stats-row" id="staffStats"></div>
+      <div class="sec-card" id="staffAddCard">
+        <div class="sec-title">➕ إضافة فعالية</div>
+        <div id="stTypeSelector">
+          <p style="font-size:.76rem;color:var(--muted);margin-bottom:12px">اختر نوع الفعالية:</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="type-btn" style="background:rgba(102,187,106,.1);border-color:rgba(102,187,106,.3);color:#66bb6a" onclick="selectType('staff','sports')">🏅<span>رياضة</span></button>
+            <button class="type-btn" style="background:rgba(201,162,39,.08);border-color:rgba(201,162,39,.25);color:var(--gold)" onclick="selectType('staff','event')">🎪<span>فعالية</span></button>
+          </div>
+        </div>
+        <div id="stEvForm" style="display:none">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+            <span id="stEvTypeBadge" class="badge" style="font-size:.8rem;padding:4px 12px"></span>
+            <button class="btn btn-sm btn-secondary" onclick="resetType('staff')">← تغيير</button>
+          </div>
+          <div class="form-grid">
+            <div class="fg"><label>المكلف</label><select class="inp" id="st_ev_sup" style="margin:0"><option value="">— اختر —</option></select></div>
+            <div class="fg"><label>اليوم</label>
+              <select class="inp" id="st_ev_day" style="margin:0">
+                <option>الأحد</option><option>الاثنين</option><option>الثلاثاء</option><option>الأربعاء</option><option>الخميس</option><option>الجمعة</option><option>السبت</option>
+              </select>
+            </div>
+            <div class="fg"><label>تاريخ البداية</label><input class="inp" type="date" id="st_ev_date" style="margin:0"/></div><div class="fg"><label>تاريخ النهاية</label><input class="inp" type="date" id="st_ev_date_to" style="margin:0"/></div>
+            <div class="fg"><label>الوقت</label><input class="inp" type="time" id="st_ev_time" style="margin:0"/></div>
+          </div>
+          <div id="stEvDynFields" style="margin-top:12px"></div>
+          <div class="form-row">
+            <button class="btn btn-primary" onclick="addEvent('staff')">✅ إضافة</button>
+            <button class="btn btn-secondary" onclick="resetType('staff')">مسح</button>
+          </div>
+        </div>
+      </div>
+      <div class="sec-card">
+        <div class="sec-title">📅 الفعاليات</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+          <span style="font-size:.72rem;color:var(--muted);font-weight:700">🔃 ترتيب:</span>
+          <select class="inp" id="sortBy_staff" onchange="renderEvTable('staff')" style="margin:0;width:auto;padding:6px 12px;font-size:.76rem">
+            <option value="date_asc">📅 الأقرب أولاً</option>
+            <option value="date_desc">📅 الأبعد أولاً</option>
+            <option value="day">📆 اليوم</option>
+            <option value="sport">🏅 اللعبة</option>
+            <option value="actType">🏆 نوع النشاط</option>
+            <option value="status">✅ حالة التقرير</option>
+          </select>
+          <input class="inp" id="searchEv_staff" onkeyup="renderEvTable('staff')" placeholder="بحث..." style="margin:0;width:180px;padding:6px 12px;font-size:.76rem"/>
+          <span style="font-size:.72rem;color:var(--muted);font-weight:700">📆 من:</span>
+          <input class="inp" type="date" id="filterFrom_staff" onchange="renderEvTable('staff')" style="margin:0;width:145px;padding:6px 12px;font-size:.76rem"/>
+          <span style="font-size:.72rem;color:var(--muted);font-weight:700">إلى:</span>
+          <input class="inp" type="date" id="filterTo_staff" onchange="renderEvTable('staff')" style="margin:0;width:145px;padding:6px 12px;font-size:.76rem"/>
+          <button class="btn btn-sm btn-danger" onclick="clearDateFilter('staff')">✕ مسح</button>
+        </div>
+        <div id="filterBadge_staff" style="margin-bottom:10px;display:none"></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr id="stEvTblHead"></tr></thead>
+          <tbody id="staffEvBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+    <div id="staff-tab-reports" style="display:none">
+      <div class="sec-card">
+        <div class="sec-title">📊 التقارير</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>#</th><th>الفعالية</th><th>المكلف</th><th>الملف</th><th>وقت الرفع</th><th>الحالة</th><th>عرض</th></tr></thead>
+          <tbody id="staffRepBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SUPERVISOR ══ -->
+<div class="screen" id="supervisorScreen">
+  <header>
+    <div class="hlogo"><div class="hlogo-icon">📋</div><div><h1 id="supWelcome">لوحة المكلف</h1><p>فعالياتي ورفع التقارير</p></div></div>
+    <div class="hright"><div class="user-badge" id="supBadge">الكود: <span>—</span></div><button class="btn-out" onclick="logout()">خروج</button></div>
+  </header>
+  <div class="main">
+    <div class="stats-row" id="supStats"></div>
+    <div class="sec-card"><div class="sec-title">📅 فعالياتي</div><div id="supList"></div></div>
+  </div>
+</div>
+
+<!-- ══ MODALS ══ -->
+
+<!-- Edit Event -->
+<div class="moverlay" id="editModal">
+  <div class="modal">
+    <div class="mhead"><div><h3>✏️ تعديل الفعالية</h3><p id="editSub"></p></div><button class="xbtn" onclick="closeM('editModal')">✕</button></div>
+    <div class="mbody">
+      <div class="form-grid">
+        <div class="fg"><label>المكلف</label><select class="inp" id="ed_sup" style="margin:0"><option value="">— اختر —</option></select></div>
+        <div class="fg"><label>اليوم</label>
+          <select class="inp" id="ed_day" style="margin:0">
+            <option>الأحد</option><option>الاثنين</option><option>الثلاثاء</option><option>الأربعاء</option><option>الخميس</option><option>الجمعة</option><option>السبت</option>
+          </select>
+        </div>
+        <div class="fg"><label>تاريخ البداية</label><input class="inp" type="date" id="ed_date" style="margin:0"/></div><div class="fg"><label>تاريخ النهاية</label><input class="inp" type="date" id="ed_date_to" style="margin:0"/></div>
+        <div class="fg"><label>الوقت</label><input class="inp" type="time" id="ed_time" style="margin:0"/></div>
+      </div>
+      <div id="editDynFields" style="margin-top:12px"></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-secondary" onclick="closeM('editModal')">إلغاء</button><button class="btn btn-primary" onclick="saveEdit()">💾 حفظ</button></div>
+  </div>
+</div>
+
+<!-- Upload Report -->
+<div class="moverlay" id="uploadModal">
+  <div class="modal" style="max-width:520px">
+    <div class="mhead"><div><h3>📎 رفع التقرير</h3><p id="uploadSub"></p></div><button class="xbtn" onclick="closeM('uploadModal')">✕</button></div>
+    <div class="mbody">
+      <div id="repDynFields" style="margin-bottom:14px"></div>
+      <div id="uploadZone"></div>
+      <div id="filePreview" style="margin-top:10px"></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-secondary" onclick="closeM('uploadModal')">إلغاء</button><button class="btn btn-primary" onclick="submitUpload()">📤 رفع</button></div>
+  </div>
+</div>
+
+<!-- Field Builder -->
+<div class="moverlay" id="fieldModal">
+  <div class="modal" style="max-width:460px">
+    <div class="mhead"><div><h3 id="fModalTitle">➕ إضافة حقل</h3><p id="fModalSub"></p></div><button class="xbtn" onclick="closeM('fieldModal')">✕</button></div>
+    <div class="mbody">
+      <div class="fg" style="margin-bottom:10px"><label>اسم الحقل</label><input class="inp" id="fld_label" placeholder="مثال: عدد الحكام"/></div>
+      <div class="fg" style="margin-bottom:10px">
+        <label>نوع الحقل</label>
+        <select class="inp" id="fld_type" onchange="onFType()">
+          <option value="text">📝 نص قصير</option>
+          <option value="number">🔢 رقم</option>
+          <option value="textarea">📄 نص طويل</option>
+          <option value="select">📋 قائمة اختيار</option>
+          <option value="date">📅 تاريخ</option>
+          <option value="yesno">✅ نعم / لا</option>
+        </select>
+      </div>
+      <div id="fld_opts_wrap" style="display:none;margin-bottom:10px">
+        <label style="font-size:.67rem;color:var(--muted);font-weight:700;display:block;margin-bottom:4px">خيارات القائمة (كل خيار في سطر)</label>
+        <textarea class="inp" id="fld_opts" rows="4" placeholder="خيار 1&#10;خيار 2&#10;خيار 3" style="resize:vertical;margin:0"></textarea>
+      </div>
+      <div class="fg" style="margin-bottom:10px"><label>نص توضيحي (اختياري)</label><input class="inp" id="fld_ph" placeholder="مثال: أدخل عدد الحكام الحاضرين"/></div>
+      <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:.8rem;color:var(--text)">
+        <input type="checkbox" id="fld_req" style="accent-color:var(--green2);width:14px;height:14px"/> حقل إلزامي
+      </label>
+    </div>
+    <div class="mfoot"><button class="btn btn-secondary" onclick="closeM('fieldModal')">إلغاء</button><button class="btn btn-primary" onclick="saveField()">✅ إضافة</button></div>
+  </div>
+</div>
+
+<!-- View File -->
+<div class="moverlay" id="viewModal">
+  <div class="modal" style="max-width:760px">
+    <div class="mhead"><div><h3 id="viewTitle">عرض التقرير</h3></div><button class="xbtn" onclick="closeM('viewModal')">✕</button></div>
+    <div class="mbody" id="viewBody" style="padding:10px"></div>
+    <div class="mfoot"><button class="btn btn-secondary" onclick="closeM('viewModal')">إغلاق</button><button class="btn btn-primary" onclick="dlFile(currentViewId)">⬇️ تحميل</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════ STATE ══════════
+const TYPES = {
+  sports:{ label:'🏅 رياضة',   color:'#66bb6a' },
+  event: { label:'🎪 فعالية',  color:'var(--gold)' }
+};
+
+// ══════════ الحقول الافتراضية ══════════
+const DEFAULT_FIELDS = {
+  sports:{ evFixed:[
+    {id:'fs_f1', label:'نوع النشاط',  type:'select', opts:['تنافسية','ودية','تدريبية'], ph:'',req:true},
+    {id:'fs_f2', label:'نوع البطولة', type:'select', opts:['محلي','دولي','دولي ودية'], ph:'',req:false},
+    {id:'fs_f3', label:'اللعبة', type:'text', opts:[], ph:'مثال: كرة القدم / كرة يد / تنس...', req:true},
+    {id:'fs_f4', label:'التصنيف', type:'text', opts:[], ph:'مثال: بطولة الممتاز', req:false},
+    {id:'fs_f5', label:'الجنس', type:'select', opts:['رجال','سيدات'], ph:'',req:true},
+    {id:'fs_f6', label:'الدرجة', type:'text', opts:[], ph:'براعم / ناشئين / شباب', req:false},
+    {id:'fs_f7', label:'الحدث — الفريق الأول', type:'text', opts:[], ph:'اسم الفريق الأول', req:false},
+    {id:'fs_f8', label:'الحدث — الفريق الثاني', type:'text', opts:[], ph:'اسم الفريق الثاني', req:false},
+    {id:'fs_f9', label:'الموقع', type:'text', opts:[], ph:'اسم الملعب أو الصالة', req:false},
+  ], evExtra:[], repFixed:[], repExtra:[] },
+  event:{ evFixed:[], evExtra:[], repFixed:[], repExtra:[] }
+};
+
+function newSeasonData(){ return { events:[], reports:{}, fields: JSON.parse(JSON.stringify(DEFAULT_FIELDS)) }; }
+
+let DB = {
+  supervisors:[],
+  staff:[],
+  seasons:[
+    { id:'s1', name:'2025/2026', dateFrom:'2025-07-01', dateTo:'2026-06-30', active:true, ...newSeasonData() }
+  ],
+  currentSeasonId:'s1'
+};
+
+// دالة مساعدة للوصول لبيانات الموسم الحالي
+function season(){ return DB.seasons.find(s=>s.id===DB.currentSeasonId)||DB.seasons[0]; }
+
+let adminPass='1234', currentRole='admin', currentUser=null;
+let editingEvId=null, uploadingEvId=null, currentViewId=null;
+let fModalTarget=null, fModalSection=null, fModalEvType=null;
+let activeFieldsType='sports';
+let currentType={admin:null,staff:null};
+
+// ══════════ LOGIN ══════════
+function setRole(r,btn){
+  currentRole=r;
+  document.querySelectorAll('.role-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['admin','staff','supervisor'].forEach(x=>document.getElementById('rf-'+x).style.display=x===r?'block':'none');
+}
+function doLogin(){
+  const err=document.getElementById('loginErr'); err.style.display='none';
+  if(currentRole==='admin'){
+    if(gv('adminPass')===adminPass){ currentUser={role:'admin'}; showScreen('adminScreen'); renderAdmin(); }
+    else err.style.display='block';
+  } else if(currentRole==='staff'){
+    const u=gv('staffUser').trim(),p=gv('staffPass');
+    const st=DB.staff.find(s=>s.username===u&&s.password===p);
+    if(st){ currentUser={role:'staff',...st}; showScreen('staffScreen'); renderStaff(); }
+    else err.style.display='block';
+  } else {
+    const code=gv('supCode').trim().toUpperCase();
+    const sup=DB.supervisors.find(s=>s.code===code);
+    if(sup){ currentUser={role:'supervisor',...sup}; showScreen('supervisorScreen'); renderSupervisor(); }
+    else err.style.display='block';
+  }
+}
+function logout(){
+  currentUser=null;
+  ['adminPass','staffUser','staffPass','supCode'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('loginErr').style.display='none';
+  showScreen('loginScreen');
+}
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+// ══════════ TABS ══════════
+function showTab(sc,tab,btn){
+  document.querySelectorAll(`#${sc}Screen .main>div[id^="${sc}-tab"]`).forEach(d=>d.style.display='none');
+  document.getElementById(`${sc}-tab-${tab}`).style.display='block';
+  document.querySelectorAll(`#${sc}Nav .nav-tab`).forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(tab==='reports') renderReports(sc);
+  if(tab==='fields')  showFType(activeFieldsType);
+  if(tab==='stats')   renderStats();
+  if(tab==='settings'){
+    setTimeout(()=>{
+      const fields = {fb_apiKey:FB_CONFIG.apiKey, fb_authDomain:FB_CONFIG.authDomain, fb_dbUrl:FB_CONFIG.databaseURL, fb_projectId:FB_CONFIG.projectId};
+      Object.entries(fields).forEach(([id,val])=>{ const el=document.getElementById(id); if(el&&!el.value) el.value=val; });
+    },100);
+  }
+}
+
+// ══════════ ADMIN ══════════
+function renderAdmin(){
+  renderSeasonSelector();
+  renderAdminStats(); renderEvTable('admin'); renderSupsTable(); renderStaffTable(); fillSupSel('ev_sup');
+}
+function renderAdminStats(){
+  const tot=season().events.length, done=season().events.filter(e=>season().reports[e.id]).length;
+  document.getElementById('adminStats').innerHTML=`
+    <div class="scard" style="--ac:#66bb6a"><div class="snum">${tot}</div><div class="slab">الفعاليات</div></div>
+    <div class="scard" style="--ac:#0fa854"><div class="snum">${done}</div><div class="slab">تقارير مكتملة ✅</div></div>
+    <div class="scard" style="--ac:var(--gold)"><div class="snum">${tot-done}</div><div class="slab">بانتظار الرفع ⏳</div></div>
+    <div class="scard" style="--ac:var(--blue)"><div class="snum">${DB.supervisors.length}</div><div class="slab">المكلفون</div></div>`;
+}
+
+// ══════════ EVENT TYPE SELECTION ══════════
+function selectType(sc,type){
+  currentType[sc]=type;
+  const info=TYPES[type];
+  const selId=sc==='admin'?'typeSelector':'stTypeSelector';
+  const formId=sc==='admin'?'evForm':'stEvForm';
+  const badgeId=sc==='admin'?'evTypeBadge':'stEvTypeBadge';
+  const dynId=sc==='admin'?'evDynFields':'stEvDynFields';
+  document.getElementById(selId).style.display='none';
+  document.getElementById(formId).style.display='block';
+  const b=document.getElementById(badgeId);
+  b.textContent=info.label;
+  b.style.cssText=`background:rgba(255,255,255,.05);border:1px solid ${info.color};color:${info.color};font-size:.8rem;padding:4px 12px;border-radius:20px;font-weight:700`;
+  renderDynForm(dynId,'ev',type,{});
+  fillSupSel(sc==='admin'?'ev_sup':'st_ev_sup');
+}
+function resetType(sc){
+  currentType[sc]=null;
+  document.getElementById(sc==='admin'?'typeSelector':'stTypeSelector').style.display='block';
+  document.getElementById(sc==='admin'?'evForm':'stEvForm').style.display='none';
+}
+
+// ══════════ DYNAMIC FORM RENDERING ══════════
+function renderDynForm(containerId, formTarget, evType, existing){
+  const el=document.getElementById(containerId); if(!el) return;
+  const typeDef=season().fields[evType]||{};
+  const fixed = formTarget==='ev' ? (typeDef.evFixed||[]) : (typeDef.repFixed||[]);
+  const extra = formTarget==='ev' ? (typeDef.evExtra||[]) : (typeDef.repExtra||[]);
+  let html='';
+  if(fixed.length){
+    html+=`<div class="sdiv">🔒 الحقول الثابتة</div><div class="form-grid">`;
+    fixed.forEach(f=>{ html+=renderField(f,existing[f.id]||'',containerId+'_'); });
+    html+='</div>';
+  }
+  if(extra.length){
+    html+=`<div class="sdiv">✨ الحقول الإضافية</div><div class="form-grid">`;
+    extra.forEach(f=>{ html+=renderField(f,existing[f.id]||'',containerId+'_'); });
+    html+='</div>';
+  }
+  if(!fixed.length&&!extra.length){
+    html='<div style="padding:10px;background:var(--card);border:1px dashed var(--border);border-radius:8px;text-align:center;font-size:.73rem;color:var(--muted)">لا توجد حقول — أضفها من <strong>إدارة الحقول</strong></div>';
+  }
+  el.innerHTML=html;
+}
+
+function renderField(f, val='', prefix=''){
+  const id=prefix+f.id, req=f.required?'<span class="req">*</span>':'';
+  const opts=f.opts||f.options||[];
+  if(f.type==='textarea') return `<div style="grid-column:1/-1"><div class="dyn-label">${f.label} ${req}</div><textarea class="inp" id="${id}" placeholder="${f.ph||f.placeholder||''}" rows="3" style="margin:0;resize:vertical">${val}</textarea></div>`;
+  if(f.type==='yesno') return `<div><div class="dyn-label">${f.label} ${req}</div><div class="yesno"><label><input type="radio" name="${id}" value="نعم" ${val==='نعم'?'checked':''}/> نعم</label><label><input type="radio" name="${id}" value="لا" ${val==='لا'?'checked':''}/> لا</label></div></div>`;
+  let inp='';
+  if(f.type==='text')   inp=`<input class="inp" id="${id}" placeholder="${f.ph||f.placeholder||''}" value="${val}" style="margin:0"/>`;
+  if(f.type==='number') inp=`<input class="inp" type="number" id="${id}" placeholder="${f.ph||f.placeholder||'0'}" value="${val}" style="margin:0"/>`;
+  if(f.type==='date')   inp=`<input class="inp" type="date" id="${id}" value="${val}" style="margin:0"/>`;
+  if(f.type==='select') inp=`<select class="inp" id="${id}" style="margin:0"><option value="">— اختر —</option>${opts.map(o=>`<option ${o===val?'selected':''}>${o}</option>`).join('')}</select>`;
+  return `<div><div class="dyn-label">${f.label} ${req}</div>${inp}</div>`;
+}
+
+function collectDyn(containerId, evType, formTarget){
+  const typeDef=season().fields[evType]||{};
+  const all=[...(formTarget==='ev'?(typeDef.evFixed||[]):(typeDef.repFixed||[])),
+             ...(formTarget==='ev'?(typeDef.evExtra||[]):(typeDef.repExtra||[]))];
+  const data={};
+  all.forEach(f=>{
+    const id=containerId+'_'+f.id;
+    if(f.type==='yesno'){ const el=document.querySelector(`input[name="${id}"]:checked`); data[f.id]=el?el.value:''; }
+    else{ data[f.id]=document.getElementById(id)?.value||''; }
+  });
+  return data;
+}
+
+// ══════════ ADD EVENT ══════════
+function addEvent(sc){
+  const type=currentType[sc];
+  if(!type){ showToast('❌ اختر نوع الفعالية','red'); return; }
+  const pref=sc==='admin'?'ev_':'st_ev_';
+  const dynId=sc==='admin'?'evDynFields':'stEvDynFields';
+  const customData=collectDyn(dynId,type,'ev');
+  const typeDef=season().fields[type]||{};
+  const allFixed=[...(typeDef.evFixed||[]),...(typeDef.evExtra||[])].filter(f=>f.required||f.req);
+  for(const f of allFixed){ if(!customData[f.id]){ showToast(`❌ حقل "${f.label}" إلزامي`,'red'); return; } }
+  const id=Date.now();
+  season().events.push({id, reportType:type, day:gv(pref+'day'), date:gv(pref+'date'), date_to:gv(pref+'date_to'), time:gv(pref+'time'), supCode:gv(pref+'sup'), customData});
+  resetType(sc);
+  renderEvTable(sc);
+  showToast('✅ تم إضافة الفعالية'); autoSyncIfConnected();
+}
+
+// ══════════ EVENTS TABLE ══════════
+function renderEvTable(sc){
+  const isAdmin=sc==='admin', isEditor=isAdmin||currentUser?.role==='editor';
+  const bodyId=isAdmin?'eventsBody':'staffEvBody';
+  const headId=isAdmin?'evTblHead':'stEvTblHead';
+  const body=document.getElementById(bodyId), head=document.getElementById(headId);
+  if(!body) return;
+
+  head.innerHTML=`<th>#</th><th>النوع</th><th>نوع النشاط</th><th>اللعبة</th><th>الجنس</th><th>الدرجة</th><th>الفريق الأول</th><th>الفريق الثاني</th><th>اليوم</th><th>من تاريخ</th><th>إلى تاريخ</th><th>الوقت</th><th>الموقع</th><th>المكلف</th><th>التقرير</th><th>إجراءات</th>`;
+
+  if(!season().events.length){ body.innerHTML=`<tr><td colspan="16" class="empty"><div class="icon">📅</div><p>لا توجد فعاليات</p></td></tr>`; renderAdminStats(); return; }
+
+  // فرز وبحث
+  const sortBy = document.getElementById(`sortBy_${sc}`)?.value || 'date_asc';
+  const search = (document.getElementById(`searchEv_${sc}`)?.value || '').trim().toLowerCase();
+  let events = [...season().events];
+
+  if(search){
+    events = events.filter(e=>{
+      const cd=e.customData||{};
+      const str=(cd['fs_f3']||'')+(cd['fs_f7']||'')+(cd['fs_f8']||'')+(cd['fs_f9']||'')+(cd['fs_f1']||'')+(e.day||'');
+      return str.toLowerCase().includes(search);
+    });
+  }
+
+  // فلتر التاريخ من/إلى
+  const filterFrom = document.getElementById(`filterFrom_${sc}`)?.value;
+  const filterTo   = document.getElementById(`filterTo_${sc}`)?.value;
+  if(filterFrom || filterTo){
+    events = events.filter(e=>{
+      const d = e.date || '';
+      if(filterFrom && d < filterFrom) return false;
+      if(filterTo   && d > filterTo)   return false;
+      return true;
+    });
+    // شارة الفلتر النشط
+    const badge = document.getElementById(`filterBadge_${sc}`);
+    if(badge){
+      badge.style.display='block';
+      badge.innerHTML=`<span style="background:rgba(58,134,212,.12);border:1px solid rgba(58,134,212,.3);color:#7ab8f5;padding:5px 12px;border-radius:20px;font-size:.73rem;font-weight:700">📆 عرض الفترة: ${filterFrom||'—'} → ${filterTo||'—'} &nbsp;|&nbsp; <strong>${events.length}</strong> فعالية</span>`;
+    }
+  } else {
+    const badge = document.getElementById(`filterBadge_${sc}`);
+    if(badge) badge.style.display='none';
+  }
+
+  const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  events.sort((a,b)=>{
+    const acd=a.customData||{}, bcd=b.customData||{};
+    if(sortBy==='date_asc')  return (a.date||'9999')>(b.date||'9999')?1:-1;
+    if(sortBy==='date_desc') return (a.date||'0000')<(b.date||'0000')?1:-1;
+    if(sortBy==='day')       return days.indexOf(a.day)-days.indexOf(b.day);
+    if(sortBy==='sport')     return (acd['fs_f3']||'').localeCompare(bcd['fs_f3']||'','ar');
+    if(sortBy==='actType')   return (acd['fs_f1']||'').localeCompare(bcd['fs_f1']||'','ar');
+    if(sortBy==='status')    return (DB.reports[b.id]?1:0)-(DB.reports[a.id]?1:0);
+    return 0;
+  });
+
+  if(!events.length){ body.innerHTML=`<tr><td colspan="16" class="empty"><div class="icon">🔍</div><p>لا توجد نتائج</p></td></tr>`; return; }
+
+  const today=new Date(); today.setHours(0,0,0,0);
+  const monthNames=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+  let lastMonth='';
+  const rows=[];
+
+  events.forEach((e,i)=>{
+    // فاصل الشهر
+    const eDate=e.date?new Date(e.date):null;
+    const monthKey=eDate?`${eDate.getFullYear()}-${eDate.getMonth()}`:'';
+    if(monthKey && monthKey!==lastMonth){
+      lastMonth=monthKey;
+      const mn=eDate?`${monthNames[eDate.getMonth()]} ${eDate.getFullYear()}`:'';
+      rows.push(`<tr><td colspan="16" style="background:linear-gradient(135deg,rgba(10,124,62,.15),rgba(10,124,62,.05));border-bottom:2px solid var(--green);padding:8px 12px">
+        <span style="font-size:.78rem;font-weight:800;color:var(--green2)">📆 ${mn}</span>
+        <span style="font-size:.65rem;color:var(--muted);margin-right:8px">— موسم ${season().name}</span>
+      </td></tr>`);
+    }
+
+    const sup=DB.supervisors.find(s=>s.code===e.supCode);
+    const rep=season().reports[e.id];
+    const info=TYPES[e.reportType]||{};
+    const cd=e.customData||{};
+    const g=v=>cd[v]||'—';
+    const actType = g('fs_f1'), sport = g('fs_f3'), gender = g('fs_f5');
+    const degree  = g('fs_f6'), team1 = g('fs_f7'), team2  = g('fs_f8'), venue = g('fs_f9');
+    const dateFmt = e.date?new Date(e.date).toLocaleDateString('ar-SA-u-nu-latn'):'—';
+    const dateTo  = e.date_to?new Date(e.date_to).toLocaleDateString('ar-SA-u-nu-latn'):'—';
+    const evDate  = e.date?new Date(e.date):null;
+    const diff    = evDate?(evDate-today)/(1000*60*60*24):999;
+    const urgent  = diff>=0&&diff<=3;
+    const rowStyle= urgent?'background:rgba(201,162,39,.05);':'';
+    const urgBadge= urgent?`<span class="badge bo" style="font-size:.55rem;margin-right:2px">⚡</span>`:'';
+    rows.push(`<tr style="${rowStyle}">
+      <td style="color:var(--muted);font-size:.65rem">${i+1}</td>
+      <td><span class="badge" style="border:1px solid ${info.color||'var(--border)'};color:${info.color||'var(--muted)'};background:rgba(255,255,255,.04);font-size:.6rem">${info.label||''}</span></td>
+      <td style="font-size:.73rem">${actType}</td>
+      <td style="font-size:.73rem;color:var(--muted)">${sport}</td>
+      <td style="font-size:.7rem">${gender}</td>
+      <td style="font-size:.7rem;color:var(--muted)">${degree}</td>
+      <td style="font-size:.73rem;font-weight:700">${team1}</td>
+      <td style="font-size:.73rem;font-weight:700">${team2}</td>
+      <td style="font-size:.73rem">${e.day||'—'}</td>
+      <td style="color:var(--gold);font-weight:700;font-size:.73rem">${dateFmt}${urgBadge}</td>
+      <td style="color:var(--gold);font-size:.73rem">${dateTo}</td>
+      <td style="color:var(--gold);font-size:.73rem">${e.time||'—'}</td>
+      <td style="font-size:.68rem;color:var(--muted)">${venue}</td>
+      <td>${sup?`<span class="badge bb">${sup.name}</span>`:'<span class="badge bm">—</span>'}</td>
+      <td>${rep?'<span class="badge bg">✅</span>':'<span class="badge bo">⏳</span>'}</td>
+      <td style="display:flex;gap:3px;flex-wrap:wrap">
+        ${rep?`<button class="btn btn-sm btn-secondary" onclick="viewFile(${e.id})">👁</button><button class="btn btn-sm btn-blue" onclick="dlFile(${e.id})">⬇️</button>`:''}
+        ${isEditor?`<button class="btn btn-sm btn-gold" onclick="openEdit(${e.id})">✏️</button><button class="btn btn-sm btn-danger" onclick="delEvent(${e.id},'${sc}')">🗑</button>`:''}
+      </td>
+    </tr>`);
+  });
+  body.innerHTML=rows.join('');
+  renderAdminStats();
+  if(sc==='staff') renderStaffStats();
+}
+
+function delEvent(id,sc){ if(!confirm('حذف هذه الفعالية؟')) return; DB.events=season().events.filter(e=>e.id!==id); delete season().reports[id]; renderEvTable(sc); showToast('🗑 تم الحذف','red'); autoSyncIfConnected(); }
+
+function clearDateFilter(sc){
+  const from=document.getElementById(`filterFrom_${sc}`);
+  const to=document.getElementById(`filterTo_${sc}`);
+  if(from) from.value='';
+  if(to)   to.value='';
+  renderEvTable(sc);
+}
+
+// ══════════ SUPERVISORS ══════════
+function addSup(){
+  const code=gv('sup_code').toUpperCase(),name=gv('sup_name'),phone=gv('sup_phone'),branch=gv('sup_branch');
+  if(!code||!name){ showToast('❌ أدخل الكود والاسم','red'); return; }
+  if(DB.supervisors.find(s=>s.code===code)){ showToast('❌ الكود موجود','red'); return; }
+  DB.supervisors.push({code,name,phone,branch});
+  ['sup_code','sup_name','sup_phone','sup_branch'].forEach(id=>document.getElementById(id).value='');
+  renderSupsTable(); fillSupSel('ev_sup'); fillSupSel('st_ev_sup'); fillSupSel('ed_sup');
+  showToast('✅ تم إضافة المكلف'); autoSyncIfConnected();
+}
+function renderSupsTable(){
+  const body=document.getElementById('supsBody'); if(!body) return;
+  if(!DB.supervisors.length){ body.innerHTML='<tr><td colspan="7" class="empty"><div class="icon">👥</div><p>لا يوجد مكلفون</p></td></tr>'; return; }
+  body.innerHTML=DB.supervisors.map(s=>{
+    const myEv=season().events.filter(e=>e.supCode===s.code), done=myEv.filter(e=>season().reports[e.id]).length;
+    return `<tr><td><span class="badge bb">${s.code}</span></td><td style="font-weight:700">${s.name}</td><td style="color:var(--muted)">${s.phone||'—'}</td><td style="color:var(--muted)">${s.branch||'—'}</td><td style="text-align:center">${myEv.length}</td><td><span class="badge ${done===myEv.length&&myEv.length>0?'bg':'bo'}">${done}/${myEv.length}</span></td><td><button class="btn btn-sm btn-danger" onclick="delSup('${s.code}')">🗑</button></td></tr>`;
+  }).join('');
+}
+function delSup(code){ if(!confirm('حذف؟')) return; DB.supervisors=DB.supervisors.filter(s=>s.code!==code); DB.events.forEach(e=>{if(e.supCode===code)e.supCode='';}); renderSupsTable(); renderEvTable('admin'); showToast('🗑 تم','red'); }
+function fillSupSel(id){ const s=document.getElementById(id); if(!s) return; s.innerHTML='<option value="">— اختر —</option>'+DB.supervisors.map(x=>`<option value="${x.code}">${x.name} (${x.code})</option>`).join(''); }
+
+// ══════════ STAFF ══════════
+function addStaff(){
+  const name=gv('st_name'),username=gv('st_user').trim(),password=gv('st_pass'),role=gv('st_role'),dept=gv('st_dept');
+  if(!name||!username||!password){ showToast('❌ أدخل الاسم والمستخدم وكلمة المرور','red'); return; }
+  if(DB.staff.find(s=>s.username===username)){ showToast('❌ اسم المستخدم موجود','red'); return; }
+  DB.staff.push({name,username,password,role,dept});
+  ['st_name','st_user','st_pass','st_dept'].forEach(id=>document.getElementById(id).value='');
+  renderStaffTable(); showToast('✅ تم إضافة الموظف'); autoSyncIfConnected();
+}
+function renderStaffTable(){
+  const body=document.getElementById('staffBody'); if(!body) return;
+  if(!DB.staff.length){ body.innerHTML='<tr><td colspan="6" class="empty"><div class="icon">🖥</div><p>لا يوجد موظفون</p></td></tr>'; return; }
+  body.innerHTML=DB.staff.map(s=>`<tr><td style="font-weight:700">${s.name}</td><td><span class="badge bb">${s.username}</span></td><td>${s.role==='editor'?'<span class="badge bg">✏️ محرر</span>':'<span class="badge bm">👁 قارئ</span>'}</td><td style="color:var(--muted)">${s.dept||'—'}</td><td><select class="inp" style="padding:3px 7px;width:auto;margin:0;font-size:.68rem" onchange="chStRole('${s.username}',this.value)"><option value="editor" ${s.role==='editor'?'selected':''}>✏️ محرر</option><option value="viewer" ${s.role==='viewer'?'selected':''}>👁 قارئ</option></select></td><td><button class="btn btn-sm btn-danger" onclick="delStaff('${s.username}')">🗑</button></td></tr>`).join('');
+}
+function chStRole(u,r){ const s=DB.staff.find(x=>x.username===u); if(s){s.role=r;showToast('✅ تم تحديث الصلاحية');} }
+function delStaff(u){ if(!confirm('حذف؟')) return; DB.staff=DB.staff.filter(s=>s.username!==u); renderStaffTable(); showToast('🗑 تم','red'); }
+
+// ══════════ STAFF SCREEN ══════════
+function renderStaff(){
+  const isEd=currentUser.role==='editor';
+  document.getElementById('staffTitle').textContent=`مرحباً، ${currentUser.name}`;
+  document.getElementById('staffRoleLbl').textContent=isEd?'✏️ محرر':'👁 قارئ';
+  document.getElementById('staffBadge').innerHTML=`المستخدم: <span>${currentUser.username}</span>`;
+  document.getElementById('staffAddCard').style.display=isEd?'block':'none';
+  renderStaffStats(); renderEvTable('staff'); fillSupSel('st_ev_sup');
+}
+function renderStaffStats(){
+  const tot=season().events.length, done=season().events.filter(e=>season().reports[e.id]).length;
+  document.getElementById('staffStats').innerHTML=`
+    <div class="scard" style="--ac:#66bb6a"><div class="snum">${tot}</div><div class="slab">الفعاليات</div></div>
+    <div class="scard" style="--ac:#0fa854"><div class="snum">${done}</div><div class="slab">مكتملة</div></div>
+    <div class="scard" style="--ac:var(--gold)"><div class="snum">${tot-done}</div><div class="slab">بانتظار</div></div>`;
+}
+
+// ══════════ SUPERVISOR ══════════
+function renderSupervisor(){
+  const sup=currentUser;
+  document.getElementById('supWelcome').textContent=`مرحباً، ${sup.name}`;
+  document.getElementById('supBadge').innerHTML=`الكود: <span>${sup.code}</span>`;
+  const myEv=season().events.filter(e=>e.supCode===sup.code), done=myEv.filter(e=>season().reports[e.id]).length;
+  document.getElementById('supStats').innerHTML=`
+    <div class="scard" style="--ac:#4fc3f7"><div class="snum">${myEv.length}</div><div class="slab">فعالياتي</div></div>
+    <div class="scard" style="--ac:#0fa854"><div class="snum">${done}</div><div class="slab">مكتملة</div></div>
+    <div class="scard" style="--ac:var(--gold)"><div class="snum">${myEv.length-done}</div><div class="slab">بانتظار</div></div>`;
+  const list=document.getElementById('supList');
+  if(!myEv.length){ list.innerHTML='<div class="empty"><div class="icon">📅</div><p>لا توجد فعاليات</p></div>'; return; }
+  list.innerHTML=myEv.map(e=>{
+    const rep=season().reports[e.id], info=TYPES[e.reportType]||{}, cd=e.customData||{};
+    const sport=cd['fs_f3']||'—', team1=cd['fs_f7']||'', team2=cd['fs_f8']||'';
+    const title=team1&&team2?`${team1} ضد ${team2}`:sport;
+    return `<div class="ev-card ${rep?'done':'pending'}">
+      <div class="ev-top"><div class="ev-title">${info.label||''} · ${title}</div>${rep?'<span class="badge bg">✅ مرفوع</span>':'<span class="badge bo">⏳ ارفع</span>'}</div>
+      <div class="ev-meta"><span>📅 ${e.day||''} ${e.date||''}${e.date_to?' — '+e.date_to:''}</span><span>⏰ ${e.time||'—'}</span><span>📍 ${cd['fs_f9']||'—'}</span></div>
+      ${rep
+        ?`<div class="ufile"><span style="font-size:1.3rem">📄</span><div style="flex:1"><div style="font-size:.76rem;font-weight:700">${rep.fileName||'التقرير'}</div><div style="font-size:.64rem;color:var(--muted)">رُفع: ${rep.submittedAt||''}</div></div><button class="btn btn-sm btn-secondary" onclick="viewFile(${e.id})">👁</button><button class="btn btn-sm btn-danger" onclick="replaceRep(${e.id})">🔄</button></div>`
+        :`<button class="btn btn-primary btn-sm" style="width:100%;padding:9px" onclick="openUpload(${e.id})">📎 رفع ملف التقرير</button>`}
+    </div>`;
+  }).join('');
+}
+
+// ══════════ UPLOAD ══════════
+function openUpload(evId){
+  uploadingEvId=evId;
+  const e=DB.events.find(x=>x.id===evId), info=TYPES[e.reportType]||{};
+  document.getElementById('uploadSub').textContent=`${info.label||''} · ${e.day||''} ${e.date||''}`;
+  const existing=DB.reports[evId]||{};
+  renderDynForm('repDynFields','rep',e.reportType,existing.repData||{});
+  document.getElementById('uploadZone').innerHTML=`<label class="upload-zone"><div style="font-size:1.6rem">📎</div><p style="font-size:.76rem;color:var(--muted);margin:4px 0">اضغط لاختيار ملف التقرير</p><small style="font-size:.63rem;color:var(--border)">PDF أو صورة — حد أقصى 10MB</small><input type="file" id="fileIn" accept=".pdf,image/*" style="display:none" onchange="previewF(event)"/></label>`;
+  document.getElementById('filePreview').innerHTML='';
+  openM('uploadModal');
+}
+function previewF(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  document.getElementById('filePreview').innerHTML=`<div class="ufile"><span style="font-size:1.2rem">${f.type.startsWith('image/')?'🖼️':'📄'}</span><div style="flex:1"><div style="font-size:.75rem;font-weight:700">${f.name}</div><div style="font-size:.63rem;color:var(--muted)">${(f.size/1024).toFixed(0)} KB</div></div><span class="badge bg">✅ جاهز</span></div>`;
+}
+function submitUpload(){
+  const file=document.getElementById('fileIn')?.files[0];
+  if(!file){ showToast('❌ اختر ملفاً','red'); return; }
+  if(file.size>10*1024*1024){ showToast('❌ الملف أكبر من 10MB','red'); return; }
+  const e=DB.events.find(x=>x.id===uploadingEvId);
+  const repData=collectDyn('repDynFields',e?.reportType,'rep');
+  const r=new FileReader();
+  r.onload=ev=>{ season().reports[uploadingEvId]={fileData:ev.target.result,fileName:file.name,fileType:file.type,repData,supName:currentUser.name,supCode:currentUser.code,submittedAt:new Date().toLocaleString('ar-SA')}; closeM('uploadModal'); renderSupervisor(); showToast('✅ تم رفع التقرير'); autoSyncIfConnected(); };
+  r.readAsDataURL(file);
+}
+function replaceRep(id){ if(!confirm('استبدال التقرير الحالي؟')) return; delete season().reports[id]; renderSupervisor(); }
+
+// ══════════ VIEW / DOWNLOAD ══════════
+function viewFile(id){
+  currentViewId=id;
+  const rep=season().reports[id]; if(!rep?.fileData){ showToast('❌ لا يوجد ملف','red'); return; }
+  const e=DB.events.find(x=>x.id===id), info=TYPES[e?.reportType]||{};
+  document.getElementById('viewTitle').textContent=`📄 ${rep.fileName||'التقرير'}`;
+  const typeDef=season().fields[e?.reportType]||{};
+  const repFields=[...(typeDef.repFixed||[]),...(typeDef.repExtra||[])];
+  let html='';
+  if(repFields.length&&rep.repData){
+    html+=`<div style="margin-bottom:12px;padding:12px;background:var(--card);border-radius:9px;border:1px solid var(--border)">
+      <div style="font-size:.76rem;font-weight:800;color:var(--gold);margin-bottom:8px">📋 بيانات التقرير — ${info.label||''}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">`;
+    repFields.forEach(f=>{ html+=`<div style="background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:8px 10px"><div style="font-size:.6rem;color:var(--muted);font-weight:700">${f.label}</div><div style="font-size:.8rem;font-weight:700;color:var(--text);margin-top:2px">${rep.repData[f.id]||'—'}</div></div>`; });
+    html+='</div></div>';
+  }
+  if(rep.fileType?.startsWith('image/')) html+=`<img src="${rep.fileData}" style="max-width:100%;border-radius:8px"/>`;
+  else html+=`<embed src="${rep.fileData}" width="100%" height="490px" type="application/pdf" style="border-radius:8px"/>`;
+  html+=`<div style="margin-top:8px;font-size:.68rem;color:var(--muted)">رفعه: ${rep.supName||'—'} · ${rep.submittedAt||'—'}</div>`;
+  document.getElementById('viewBody').innerHTML=html;
+  openM('viewModal');
+}
+function dlFile(id){ const r=season().reports[id]; if(!r?.fileData){ showToast('❌ لا يوجد ملف','red'); return; } const a=document.createElement('a');a.href=r.fileData;a.download=r.fileName||'تقرير';a.click(); }
+
+// ══════════ REPORTS TAB ══════════
+function renderReports(sc){
+  const bodyId=sc==='admin'?'reportsBody':'staffRepBody';
+  const statsId=sc==='admin'?'repStats':null;
+  const tot=season().events.length, done=season().events.filter(e=>season().reports[e.id]).length;
+  if(statsId) document.getElementById(statsId).innerHTML=`<div class="scard" style="--ac:#0fa854"><div class="snum">${done}</div><div class="slab">مكتملة</div></div><div class="scard" style="--ac:var(--gold)"><div class="snum">${tot-done}</div><div class="slab">بانتظار</div></div>`;
+  const body=document.getElementById(bodyId); if(!body) return;
+  const withRep=season().events.filter(e=>season().reports[e.id]);
+  if(!withRep.length){ body.innerHTML='<tr><td colspan="7" class="empty"><div class="icon">📊</div><p>لا توجد تقارير</p></td></tr>'; return; }
+  body.innerHTML=withRep.map((e,i)=>{
+    const r=season().reports[e.id], sup=DB.supervisors.find(s=>s.code===e.supCode), info=TYPES[e.reportType]||{};
+    return `<tr><td>${i+1}</td><td><span class="badge" style="border:1px solid ${info.color||'var(--border)'};color:${info.color||'var(--muted)'};font-size:.6rem">${info.label||''}</span></td><td>${sup?sup.name:'—'}</td><td style="font-size:.68rem;color:var(--muted)">${r.fileName||'—'}</td><td style="font-size:.68rem;color:var(--muted)">${r.submittedAt||'—'}</td><td><span class="badge bg">✅</span></td><td style="display:flex;gap:4px"><button class="btn btn-sm btn-secondary" onclick="viewFile(${e.id})">👁</button><button class="btn btn-sm btn-primary" onclick="dlFile(${e.id})">⬇️</button></td></tr>`;
+  }).join('');
+}
+
+// ══════════ EDIT EVENT ══════════
+function openEdit(id){
+  editingEvId=id;
+  const e=DB.events.find(x=>x.id===id); if(!e) return;
+  const info=TYPES[e.reportType]||{};
+  document.getElementById('editSub').textContent=`${info.label||''} · ${e.day||''} ${e.date||''}`;
+  ['day','date','date_to','time'].forEach(f=>{const el=document.getElementById('ed_'+f);if(el)el.value=e[f]||'';});
+  fillSupSel('ed_sup'); setTimeout(()=>{ document.getElementById('ed_sup').value=e.supCode||''; },10);
+  renderDynForm('editDynFields','ev',e.reportType,e.customData||{});
+  openM('editModal');
+}
+function saveEdit(){
+  const e=DB.events.find(x=>x.id===editingEvId); if(!e) return;
+  ['day','date','date_to','time'].forEach(f=>e[f]=gv('ed_'+f));
+  e.supCode=gv('ed_sup');
+  e.customData=collectDyn('editDynFields',e.reportType,'ev');
+  closeM('editModal');
+  renderEvTable(currentUser.role==='admin'?'admin':'staff');
+  showToast('✅ تم الحفظ'); autoSyncIfConnected();
+}
+
+// ══════════ FIELD BUILDER ══════════
+function showFType(type){
+  activeFieldsType=type;
+  const colors={sports:'#66bb6a', event:'var(--gold)'};
+  ['sports','event'].forEach(t=>{
+    const btn=document.getElementById('ftab-'+t); if(!btn) return;
+    const active=t===type;
+    btn.style.background=active?'rgba(255,255,255,.08)':'var(--card)';
+    btn.style.border=`1px solid ${active?colors[t]:'var(--border)'}`;
+    btn.style.color=active?colors[t]:'var(--muted)';
+  });
+  const labels={sports:'🏅 رياضة', event:'🎪 فعالية'};
+  document.getElementById('fEvTitle').textContent=`📝 حقول ${labels[type]} — الفعالية`;
+  document.getElementById('fRepTitle').textContent=`📋 حقول ${labels[type]} — التقرير`;
+  renderFLists();
+}
+function renderFLists(){
+  const t=activeFieldsType, td=season().fields[t]||{};
+  renderFList('fixedEvList',  td.evFixed||[],  'ev','fixed',t);
+  renderFList('extraEvList',  td.evExtra||[],  'ev','extra',t);
+  renderFList('fixedRepList', td.repFixed||[], 'rep','fixed',t);
+  renderFList('extraRepList', td.repExtra||[], 'rep','extra',t);
+}
+function renderFList(elId, fields, ft, sec, evType){
+  const el=document.getElementById(elId); if(!el) return;
+  const icons={text:'📝',number:'🔢',textarea:'📄',select:'📋',date:'📅',yesno:'✅'};
+  const typeLabels={text:'نص قصير',number:'رقم',textarea:'نص طويل',select:'قائمة',date:'تاريخ',yesno:'نعم/لا'};
+  const bgMap={text:'rgba(58,134,212,.12)',number:'rgba(10,124,62,.12)',textarea:'rgba(224,120,32,.1)',select:'rgba(201,162,39,.1)',date:'rgba(155,89,182,.1)',yesno:'rgba(224,53,53,.08)'};
+  if(!fields.length){ el.innerHTML='<div style="padding:10px;text-align:center;font-size:.7rem;color:var(--muted)">لا توجد حقول بعد</div>'; return; }
+  el.innerHTML=fields.map(f=>`
+    <div class="field-item">
+      <div class="fi-icon" style="background:${bgMap[f.type]||'rgba(255,255,255,.05)'}">${icons[f.type]||'📝'}</div>
+      <div class="fi-info">
+        <div class="fi-name">${f.label}${(f.req||f.required)?` <span style="color:var(--red);font-size:.6rem">*إلزامي</span>`:''}</div>
+        <div class="fi-type">${typeLabels[f.type]||f.type}${(f.opts||f.options||[]).length?' · '+(f.opts||f.options||[]).slice(0,3).join('، ')+(((f.opts||f.options||[]).length>3)?'...':''):''}</div>
+      </div>
+      <button class="btn btn-sm btn-danger" onclick="delField('${ft}','${sec}','${evType}','${f.id}')">🗑</button>
+    </div>`).join('');
+}
+function openFModal(ft, sec){
+  fModalTarget=ft; fModalSection=sec; fModalEvType=activeFieldsType;
+  const labels={football:'⚽ كرة القدم',other:'🏅 ألعاب مختلفة',event:'🎪 فعالية'};
+  const secLabel=sec==='fixed'?'🔒 ثابت':'✨ إضافي';
+  const targetLabel=ft==='ev'?'حقول الفعالية':'حقول التقرير';
+  document.getElementById('fModalTitle').textContent='➕ إضافة حقل';
+  document.getElementById('fModalSub').textContent=`${labels[activeFieldsType]} — ${targetLabel} (${secLabel})`;
+  ['fld_label','fld_ph','fld_opts'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('fld_type').value='text';
+  document.getElementById('fld_req').checked=false;
+  document.getElementById('fld_opts_wrap').style.display='none';
+  openM('fieldModal');
+}
+function onFType(){ document.getElementById('fld_opts_wrap').style.display=gv('fld_type')==='select'?'block':'none'; }
+function saveField(){
+  const label=gv('fld_label').trim();
+  if(!label){ showToast('❌ أدخل اسم الحقل','red'); return; }
+  const type=gv('fld_type');
+  const field={
+    id:'cf_'+Date.now(), label, type,
+    ph:gv('fld_ph'),
+    req:document.getElementById('fld_req').checked,
+    opts:type==='select'?gv('fld_opts').split('\n').map(o=>o.trim()).filter(Boolean):[]
+  };
+  const td=season().fields[fModalEvType];
+  if(!td) return;
+  const key = fModalTarget==='ev' ? (fModalSection==='fixed'?'evFixed':'evExtra') : (fModalSection==='fixed'?'repFixed':'repExtra');
+  td[key].push(field);
+  closeM('fieldModal'); renderFLists(); showToast('✅ تم إضافة الحقل');
+}
+function delField(ft, sec, evType, id){
+  if(!confirm('حذف هذا الحقل؟')) return;
+  const td=season().fields[evType]; if(!td) return;
+  const key = ft==='ev' ? (sec==='fixed'?'evFixed':'evExtra') : (sec==='fixed'?'repFixed':'repExtra');
+  td[key]=td[key].filter(f=>f.id!==id);
+  renderFLists(); showToast('🗑 تم الحذف','red'); autoSyncIfConnected();
+}
+
+// ══════════ STATISTICAL REPORT ══════════
+function clearStats(){
+  ['statsFrom','statsTo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  renderStats();
+}
+
+function renderStats(){
+  const from = document.getElementById('statsFrom')?.value||'';
+  const to   = document.getElementById('statsTo')?.value||'';
+
+  // فلترة الفعاليات
+  let evs = season().events.filter(e=>{
+    const d=e.date||'';
+    if(from && d<from) return false;
+    if(to   && d>to)   return false;
+    return true;
+  });
+
+  const total    = evs.length;
+  const done     = evs.filter(e=>season().reports[e.id]).length;
+  const pending  = total-done;
+  const sports   = evs.filter(e=>e.reportType==='sports').length;
+  const eventType= evs.filter(e=>e.reportType==='event').length;
+
+  // بطاقات الإجماليات
+  document.getElementById('statsCards').innerHTML=`
+    <div class="scard" style="--ac:#66bb6a"><div class="snum">${total}</div><div class="slab">إجمالي الفعاليات</div></div>
+    <div class="scard" style="--ac:#0fa854"><div class="snum">${done}</div><div class="slab">تقارير مرفوعة ✅</div></div>
+    <div class="scard" style="--ac:var(--red)"><div class="snum">${pending}</div><div class="slab">لم تُرفع بعد ⏳</div></div>
+    <div class="scard" style="--ac:var(--blue)"><div class="snum">${DB.supervisors.length}</div><div class="slab">المكلفون</div></div>
+    <div class="scard" style="--ac:#66bb6a"><div class="snum">${sports}</div><div class="slab">فعاليات رياضية</div></div>
+    <div class="scard" style="--ac:var(--gold)"><div class="snum">${eventType}</div><div class="slab">فعاليات أخرى</div></div>`;
+
+  // توزيع اللعبة
+  const bySport={};
+  evs.forEach(e=>{ const s=(e.customData||{})['fs_f3']||'غير محدد'; bySport[s]=(bySport[s]||0)+1; });
+  document.getElementById('statsBySport').innerHTML = renderDistTable(bySport, total);
+
+  // توزيع نوع النشاط
+  const byAct={};
+  evs.forEach(e=>{ const a=(e.customData||{})['fs_f1']||'غير محدد'; byAct[a]=(byAct[a]||0)+1; });
+  document.getElementById('statsByActType').innerHTML = renderDistTable(byAct, total);
+
+  // توزيع الجنس
+  const byGender={};
+  evs.forEach(e=>{ const g=(e.customData||{})['fs_f5']||'غير محدد'; byGender[g]=(byGender[g]||0)+1; });
+  document.getElementById('statsByGender').innerHTML = renderDistTable(byGender, total);
+
+  // أداء المكلفين
+  const supPerf = DB.supervisors.map(s=>{
+    const myEv=evs.filter(e=>e.supCode===s.code);
+    const myDone=myEv.filter(e=>season().reports[e.id]).length;
+    return {name:s.name, code:s.code, total:myEv.length, done:myDone, pct:myEv.length?Math.round(myDone/myEv.length*100):0};
+  }).filter(s=>s.total>0).sort((a,b)=>b.pct-a.pct);
+
+  document.getElementById('statsBySup').innerHTML = supPerf.length
+    ? `<table style="width:100%;border-collapse:collapse;font-size:.76rem">
+        <thead><tr style="border-bottom:1px solid var(--border)">
+          <th style="padding:7px 8px;text-align:right;color:var(--muted);font-size:.65rem">المكلف</th>
+          <th style="padding:7px 8px;text-align:center;color:var(--muted);font-size:.65rem">فعالياته</th>
+          <th style="padding:7px 8px;text-align:center;color:var(--muted);font-size:.65rem">مكتملة</th>
+          <th style="padding:7px 8px;text-align:center;color:var(--muted);font-size:.65rem">نسبة الإنجاز</th>
+        </tr></thead>
+        <tbody>${supPerf.map(s=>`<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:7px 8px;font-weight:700">${s.name}</td>
+          <td style="padding:7px 8px;text-align:center">${s.total}</td>
+          <td style="padding:7px 8px;text-align:center"><span class="badge ${s.done===s.total?'bg':'bo'}">${s.done}</span></td>
+          <td style="padding:7px 8px;text-align:center">
+            <div style="background:var(--border);border-radius:20px;height:6px;width:80px;display:inline-block;vertical-align:middle;margin-left:6px">
+              <div style="background:${s.pct===100?'var(--green2)':s.pct>=50?'var(--gold)':'var(--red)'};height:6px;border-radius:20px;width:${s.pct}%"></div>
+            </div>
+            <span style="font-size:.7rem;font-weight:700;color:${s.pct===100?'var(--green2)':s.pct>=50?'var(--gold)':'var(--red)'}">${s.pct}%</span>
+          </td>
+        </tr>`).join('')}</tbody>
+      </table>`
+    : '<div class="empty" style="padding:20px"><p>لا توجد بيانات</p></div>';
+
+  // الجدول الشامل
+  renderStatsTable(evs);
+}
+
+function renderDistTable(obj, total){
+  const entries=Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length) return '<div class="empty" style="padding:20px"><p>لا توجد بيانات</p></div>';
+  return `<table style="width:100%;border-collapse:collapse;font-size:.76rem">
+    <thead><tr style="border-bottom:1px solid var(--border)">
+      <th style="padding:6px 8px;text-align:right;color:var(--muted);font-size:.65rem">البند</th>
+      <th style="padding:6px 8px;text-align:center;color:var(--muted);font-size:.65rem">العدد</th>
+      <th style="padding:6px 8px;text-align:center;color:var(--muted);font-size:.65rem">النسبة</th>
+    </tr></thead>
+    <tbody>${entries.map(([k,v])=>{
+      const pct=total?Math.round(v/total*100):0;
+      return `<tr style="border-bottom:1px solid rgba(255,255,255,.04)">
+        <td style="padding:6px 8px;font-weight:600">${k}</td>
+        <td style="padding:6px 8px;text-align:center;font-weight:700;color:var(--green2)">${v}</td>
+        <td style="padding:6px 8px;text-align:center">
+          <div style="background:var(--border);border-radius:20px;height:5px;width:60px;display:inline-block;vertical-align:middle;margin-left:5px">
+            <div style="background:var(--green2);height:5px;border-radius:20px;width:${pct}%"></div>
+          </div>
+          <span style="font-size:.68rem;color:var(--muted)">${pct}%</span>
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+function renderStatsTable(evs){
+  const head=document.getElementById('statsTableHead');
+  const body=document.getElementById('statsTableBody');
+  const count=document.getElementById('statsCount');
+  count.textContent=`إجمالي: ${evs.length} فعالية`;
+
+  head.innerHTML=`<th>م</th><th>النوع</th><th>نوع النشاط</th><th>نوع البطولة</th><th>اللعبة</th><th>التصنيف</th><th>الجنس</th><th>الدرجة</th><th>الفريق الأول</th><th>الفريق الثاني</th><th>اليوم</th><th>من تاريخ</th><th>إلى تاريخ</th><th>الوقت</th><th>الموقع</th><th>المكلف</th><th>التقرير</th>`;
+
+  if(!evs.length){body.innerHTML='<tr><td colspan="17" class="empty"><div class="icon">📊</div><p>لا توجد فعاليات في هذه الفترة</p></td></tr>'; return;}
+
+  // ترتيب حسب التاريخ
+  const sorted=[...evs].sort((a,b)=>(a.date||'9999')>(b.date||'9999')?1:-1);
+
+  body.innerHTML=sorted.map((e,i)=>{
+    const sup=DB.supervisors.find(s=>s.code===e.supCode);
+    const rep=season().reports[e.id];
+    const info=TYPES[e.reportType]||{};
+    const cd=e.customData||{};
+    const g=k=>cd[k]||'';
+    const dateFmt=e.date?new Date(e.date).toLocaleDateString('ar-SA-u-nu-latn'):'';
+    const dateTo =e.date_to?new Date(e.date_to).toLocaleDateString('ar-SA-u-nu-latn'):'';
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="font-size:.7rem;color:var(--muted);text-align:center">${i+1}</td>
+      <td><span class="badge" style="border:1px solid ${info.color||'var(--border)'};color:${info.color||'var(--muted)'};font-size:.6rem">${info.label||''}</span></td>
+      <td style="font-size:.73rem">${g('fs_f1')}</td>
+      <td style="font-size:.73rem">${g('fs_f2')}</td>
+      <td style="font-size:.73rem;font-weight:700">${g('fs_f3')}</td>
+      <td style="font-size:.7rem;color:var(--muted)">${g('fs_f4')}</td>
+      <td style="font-size:.7rem">${g('fs_f5')}</td>
+      <td style="font-size:.7rem;color:var(--muted)">${g('fs_f6')}</td>
+      <td style="font-size:.73rem;font-weight:700">${g('fs_f7')}</td>
+      <td style="font-size:.73rem;font-weight:700">${g('fs_f8')}</td>
+      <td style="font-size:.73rem">${e.day||''}</td>
+      <td style="color:var(--gold);font-weight:700;font-size:.73rem">${dateFmt}</td>
+      <td style="color:var(--gold);font-size:.73rem">${dateTo}</td>
+      <td style="color:var(--gold);font-size:.73rem">${e.time||''}</td>
+      <td style="font-size:.7rem;color:var(--muted)">${g('fs_f9')}</td>
+      <td style="font-size:.72rem">${sup?sup.name:'—'}</td>
+      <td>${rep?'<span class="badge bg">✅ مرفوع</span>':'<span class="badge bo">⏳ انتظار</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════ EXPORT TO EXCEL ══════════
+function exportToExcel(){
+  const from = document.getElementById('statsFrom')?.value||'';
+  const to   = document.getElementById('statsTo')?.value||'';
+
+  let evs = season().events.filter(e=>{
+    const d=e.date||'';
+    if(from && d<from) return false;
+    if(to   && d>to)   return false;
+    return true;
+  });
+
+  evs = [...evs].sort((a,b)=>(a.date||'9999')>(b.date||'9999')?1:-1);
+
+  // ── ورقة 1: الفعاليات الكاملة ──
+  const headers = ['م','النوع','نوع النشاط','نوع البطولة','اللعبة','التصنيف','الجنس','الدرجة','الفريق الأول','الفريق الثاني','اليوم','من تاريخ','إلى تاريخ','الوقت','الموقع','المكلف','حالة التقرير'];
+  const rows = evs.map((e,i)=>{
+    const sup=DB.supervisors.find(s=>s.code===e.supCode);
+    const rep=season().reports[e.id];
+    const cd=e.customData||{};
+    const g=k=>cd[k]||'';
+    return [
+      i+1,
+      TYPES[e.reportType]?.label?.replace(/[⚽🏅🎪]/g,'').trim()||'',
+      g('fs_f1'), g('fs_f2'), g('fs_f3'), g('fs_f4'), g('fs_f5'), g('fs_f6'),
+      g('fs_f7'), g('fs_f8'),
+      e.day||'', e.date||'', e.date_to||'', e.time||'', g('fs_f9'),
+      sup?sup.name:'',
+      rep?'مرفوع':'لم يُرفع'
+    ];
+  });
+
+  // ── ورقة 2: إحصائيات ──
+  const total=evs.length, done=evs.filter(e=>season().reports[e.id]).length;
+  const statsRows=[
+    ['📊 ملخص إحصائي',''],
+    ['إجمالي الفعاليات', total],
+    ['تقارير مرفوعة', done],
+    ['لم ترفع بعد', total-done],
+    ['نسبة الإنجاز', total?Math.round(done/total*100)+'%':'0%'],
+    [''],
+    ['🏅 توزيع حسب اللعبة','العدد'],
+    ...Object.entries(countBy(evs,'fs_f3')).sort((a,b)=>b[1]-a[1]),
+    [''],
+    ['🏆 توزيع حسب نوع النشاط','العدد'],
+    ...Object.entries(countBy(evs,'fs_f1')).sort((a,b)=>b[1]-a[1]),
+    [''],
+    ['👤 توزيع حسب الجنس','العدد'],
+    ...Object.entries(countBy(evs,'fs_f5')).sort((a,b)=>b[1]-a[1]),
+    [''],
+    ['📋 أداء المكلفين','إجمالي','مكتمل','نسبة الإنجاز'],
+    ...DB.supervisors.map(s=>{
+      const myEv=evs.filter(e=>e.supCode===s.code);
+      const myDone=myEv.filter(e=>season().reports[e.id]).length;
+      return [s.name, myEv.length, myDone, myEv.length?Math.round(myDone/myEv.length*100)+'%':'0%'];
+    }).filter(r=>r[1]>0)
+  ];
+
+  // بناء XML لـ Excel
+  const xml = buildExcelXml([
+    {name:'الفعاليات', headers, rows},
+    {name:'إحصائيات',  headers:[], rows:statsRows}
+  ]);
+
+  // تحميل الملف
+  const blob = new Blob([xml], {type:'application/vnd.ms-excel;charset=utf-8'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  const dateStr = from&&to ? `${from}_${to}` : new Date().toISOString().slice(0,10);
+  a.download = `تقرير_الفعاليات_${dateStr}.xls`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ تم تصدير ملف Excel');
+}
+
+function countBy(evs, fieldId){
+  const obj={};
+  evs.forEach(e=>{ const v=(e.customData||{})[fieldId]||'غير محدد'; obj[v]=(obj[v]||0)+1; });
+  return obj;
+}
+
+function buildExcelXml(sheets){
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  let xml=`<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+  xmlns:x="urn:schemas-microsoft-com:office:excel">
+<Styles>
+  <Style ss:ID="header">
+    <Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="10"/>
+    <Interior ss:Color="#0a7c3e" ss:Pattern="Solid"/>
+    <Alignment ss:Horizontal="Center" ss:ReadingOrder="RightToLeft"/>
+    <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#c9a227"/></Borders>
+  </Style>
+  <Style ss:ID="odd">
+    <Interior ss:Color="#f4faf6" ss:Pattern="Solid"/>
+    <Alignment ss:ReadingOrder="RightToLeft"/>
+    <Font ss:Size="9"/>
+  </Style>
+  <Style ss:ID="even">
+    <Interior ss:Color="#e8f5ed" ss:Pattern="Solid"/>
+    <Alignment ss:ReadingOrder="RightToLeft"/>
+    <Font ss:Size="9"/>
+  </Style>
+  <Style ss:ID="done">
+    <Interior ss:Color="#c8e6c9" ss:Pattern="Solid"/>
+    <Alignment ss:ReadingOrder="RightToLeft"/>
+    <Font ss:Size="9" ss:Color="#1b5e20" ss:Bold="1"/>
+  </Style>
+  <Style ss:ID="pending">
+    <Interior ss:Color="#fff9c4" ss:Pattern="Solid"/>
+    <Alignment ss:ReadingOrder="RightToLeft"/>
+    <Font ss:Size="9" ss:Color="#795548"/>
+  </Style>
+  <Style ss:ID="section">
+    <Font ss:Bold="1" ss:Size="10" ss:Color="#0a7c3e"/>
+    <Interior ss:Color="#e8f5ed" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="num">
+    <Alignment ss:Horizontal="Center" ss:ReadingOrder="RightToLeft"/>
+    <Font ss:Size="9" ss:Bold="1" ss:Color="#0a7c3e"/>
+  </Style>
+</Styles>`;
+
+  sheets.forEach(sheet=>{
+    xml+=`<Worksheet ss:Name="${esc(sheet.name)}"><Table ss:DefaultColumnWidth="80" ss:DefaultRowHeight="18">`;
+    if(sheet.headers.length){
+      xml+=`<Row ss:Height="22">${sheet.headers.map(h=>`<Cell ss:StyleID="header"><Data ss:Type="String">${esc(h)}</Data></Cell>`).join('')}</Row>`;
+    }
+    sheet.rows.forEach((row,ri)=>{
+      const isStatus = row[row.length-1]==='مرفوع'||row[row.length-1]==='لم يُرفع';
+      const baseStyle = ri%2===0?'even':'odd';
+      xml+=`<Row>${row.map((cell,ci)=>{
+        let style=baseStyle;
+        if(sheet.headers.length===0 && ci===0 && String(cell).startsWith('�')) style='section';
+        else if(isStatus && ci===row.length-1) style=cell==='مرفوع'?'done':'pending';
+        else if(ci===0 && sheet.headers.length>0) style='num';
+        const type=typeof cell==='number'?'Number':'String';
+        return `<Cell ss:StyleID="${style}"><Data ss:Type="${type}">${esc(cell)}</Data></Cell>`;
+      }).join('')}</Row>`;
+    });
+    xml+=`</Table></Worksheet>`;
+  });
+
+  xml+=`</Workbook>`;
+  return xml;
+}
+
+// ══════════ SEASONS ══════════
+function renderSeasonSelector(){
+  const sel = document.getElementById('seasonSelector');
+  if(!sel) return;
+  sel.innerHTML = DB.seasons.map(s=>
+    `<option value="${s.id}" ${s.id===DB.currentSeasonId?'selected':''}>${s.name}${s.active?' ✦':''}</option>`
+  ).join('');
+}
+
+function switchSeason(id){
+  DB.currentSeasonId = id;
+  renderAdmin();
+  showToast(`✅ تم التبديل لموسم ${season().name}`);
+}
+
+function addSeason(){
+  const name = document.getElementById('sn_name')?.value.trim();
+  const from = document.getElementById('sn_from')?.value;
+  const to   = document.getElementById('sn_to')?.value;
+  if(!name){ showToast('❌ أدخل اسم الموسم','red'); return; }
+  if(DB.seasons.find(s=>s.name===name)){ showToast('❌ الموسم موجود مسبقاً','red'); return; }
+  const id = 's_'+Date.now();
+  DB.seasons.push({ id, name, dateFrom:from, dateTo:to, active:false, ...newSeasonData() });
+  ['sn_name','sn_from','sn_to'].forEach(x=>{ const el=document.getElementById(x); if(el) el.value=''; });
+  renderSeasonsList();
+  renderSeasonSelector();
+  showToast('✅ تم إضافة الموسم');
+  autoSyncIfConnected();
+}
+
+function setActiveSeason(id){
+  DB.seasons.forEach(s=>s.active=false);
+  const s=DB.seasons.find(x=>x.id===id);
+  if(s){ s.active=true; DB.currentSeasonId=id; }
+  renderSeasonsList();
+  renderSeasonSelector();
+  renderAdmin();
+  showToast(`✅ الموسم الحالي: ${s?.name||''}`);
+  autoSyncIfConnected();
+}
+
+function deleteSeason(id){
+  if(DB.seasons.length<=1){ showToast('❌ لا يمكن حذف الموسم الوحيد','red'); return; }
+  const s=DB.seasons.find(x=>x.id===id);
+  if(!confirm(`حذف موسم "${s?.name}"؟\nسيتم حذف كل فعالياته وتقاريره.`)) return;
+  DB.seasons=DB.seasons.filter(x=>x.id!==id);
+  if(DB.currentSeasonId===id) DB.currentSeasonId=DB.seasons[0].id;
+  renderSeasonsList();
+  renderSeasonSelector();
+  renderAdmin();
+  showToast('🗑 تم حذف الموسم','red');
+  autoSyncIfConnected();
+}
+
+function renderSeasonsList(){
+  const el=document.getElementById('seasonsList'); if(!el) return;
+  el.innerHTML=DB.seasons.map(s=>{
+    const evCount=s.events?.length||0;
+    const repCount=Object.keys(s.reports||{}).length;
+    const isCurrent=s.id===DB.currentSeasonId;
+    return `<div style="background:var(--card);border:${isCurrent?'2px solid var(--green2)':'1px solid var(--border)'};border-radius:12px;padding:16px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="flex:1">
+        <div style="font-size:.95rem;font-weight:800;color:var(--white);display:flex;align-items:center;gap:8px">
+          ${s.name}
+          ${s.active?'<span class="badge bg">✦ النشط</span>':''}
+          ${isCurrent?'<span class="badge bb">📌 محدد</span>':''}
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:4px;display:flex;gap:14px;flex-wrap:wrap">
+          <span>📅 من: ${s.dateFrom||'—'} إلى ${s.dateTo||'—'}</span>
+          <span>🏅 فعاليات: <strong style="color:var(--gold)">${evCount}</strong></span>
+          <span>📋 تقارير: <strong style="color:var(--green2)">${repCount}</strong></span>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-sm btn-primary" onclick="switchSeason('${s.id}')">📂 فتح</button>
+        ${!s.active?`<button class="btn btn-sm btn-gold" onclick="setActiveSeason('${s.id}')">✦ تعيين كنشط</button>`:''}
+        ${DB.seasons.length>1?`<button class="btn btn-sm btn-danger" onclick="deleteSeason('${s.id}')">🗑 حذف</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════ SAVE / LOAD (LOCAL) ══════════
+function saveToFile(){
+  const data = { DB, adminPass, savedAt: new Date().toLocaleString('ar-SA'), version:'1.0' };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `بيانات_الفعاليات_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  document.getElementById('backupInfo').textContent = `✅ تم الحفظ في ${new Date().toLocaleString('ar-SA')}`;
+  showToast('✅ تم حفظ البيانات');
+}
+
+function loadFromFile(event){
+  const file = event.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!data.DB) throw new Error('ملف غير صالح');
+      if(!confirm(`استيراد البيانات من ${data.savedAt||'ملف محفوظ'}؟\nسيتم استبدال البيانات الحالية.`)) return;
+      DB = data.DB;
+      if(data.adminPass) adminPass = data.adminPass;
+      renderAdmin();
+      document.getElementById('backupInfo').textContent = `✅ تم الاستيراد من ${data.savedAt||'الملف'}`;
+      showToast('✅ تم استيراد البيانات بنجاح');
+    } catch(err){
+      showToast('❌ ملف غير صالح','red');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
+// ══════════ FIREBASE ══════════
+let fbApp=null, fbDb=null, fbConnected=false, fbAutoSync=null;
+
+// ══ مفاتيح Firebase محفوظة مسبقاً ══
+const FB_CONFIG = {
+  apiKey:      "AIzaSyDGiqoW5_s6E4wf4FcqQesXnN_DtStV0jU",
+  authDomain:  "sport-events-ksa.firebaseapp.com",
+  databaseURL: "https://sport-events-ksa-default-rtdb.firebaseio.com",
+  projectId:   "sport-events-ksa"
+};
+
+// اتصال تلقائي عند فتح الصفحة
+window.addEventListener('load', ()=>{
+  setTimeout(()=>{
+    try{
+      if(typeof firebase !== 'undefined'){
+        fbApp = firebase.initializeApp(FB_CONFIG, 'sportsApp');
+        fbDb  = firebase.database(fbApp);
+        fbDb.ref('.info/connected').on('value', snap=>{
+          fbConnected = snap.val()===true;
+          const status = document.getElementById('fbStatus');
+          const syncStatus = document.getElementById('syncStatus');
+          if(fbConnected){
+            if(status) status.innerHTML='☁️ <span style="color:var(--green2);font-weight:700">متصل</span>';
+            if(syncStatus) syncStatus.textContent='☁️ متصل بالسحابة';
+            ['fbSyncBtn','fbPullBtn','fbDisconnectBtn'].forEach(id=>{
+              const el=document.getElementById(id); if(el) el.style.display='inline-flex';
+            });
+            if(fbAutoSync) clearInterval(fbAutoSync);
+            fbAutoSync = setInterval(()=>syncToFirebase(true), 30000);
+            pullFromFirebase(true);
+          }
+        });
+      }
+    }catch(e){ console.log('Firebase auto-connect:', e.message); }
+  }, 1500);
+});
+
+function connectFirebase(){
+  const apiKey     = document.getElementById('fb_apiKey')?.value.trim();
+  const projectId  = document.getElementById('fb_projectId')?.value.trim();
+  const authDomain = document.getElementById('fb_authDomain')?.value.trim();
+  const dbUrl      = document.getElementById('fb_dbUrl')?.value.trim();
+  const msg = document.getElementById('fb_msg');
+
+  if(!apiKey||!projectId||!dbUrl){
+    msg.style.color='var(--red)'; msg.textContent='❌ أدخل جميع المفاتيح المطلوبة'; return;
+  }
+  msg.style.color='var(--muted)'; msg.textContent='⏳ جاري الاتصال...';
+
+  try{
+    // إذا في app قديم نحذفه
+    if(fbApp) fbApp.delete();
+    fbApp = firebase.initializeApp({apiKey, authDomain, databaseURL:dbUrl, projectId}, 'sportsApp_'+Date.now());
+    fbDb  = firebase.database(fbApp);
+
+    // اختبار الاتصال
+    fbDb.ref('.info/connected').on('value', snap=>{
+      fbConnected = snap.val()===true;
+      const status = document.getElementById('fbStatus');
+      const syncStatus = document.getElementById('syncStatus');
+      if(fbConnected){
+        msg.style.color='var(--green2)'; msg.textContent='✅ متصل بـ Firebase بنجاح';
+        if(status){ status.innerHTML='☁️ <span style="color:var(--green2);font-weight:700">متصل</span>'; }
+        if(syncStatus) syncStatus.textContent='☁️ متصل بالسحابة';
+        ['fbSyncBtn','fbPullBtn','fbDisconnectBtn'].forEach(id=>{
+          const el=document.getElementById(id); if(el) el.style.display='inline-flex';
+        });
+        // مزامنة تلقائية كل 30 ثانية
+        if(fbAutoSync) clearInterval(fbAutoSync);
+        fbAutoSync = setInterval(()=>syncToFirebase(true), 30000);
+        // جلب البيانات فور الاتصال
+        pullFromFirebase(true);
+      } else {
+        if(status){ status.innerHTML='☁️ <span style="color:var(--red)">انقطع</span>'; }
+      }
+    });
+  } catch(err){
+    msg.style.color='var(--red)'; msg.textContent='❌ خطأ: '+err.message;
+  }
+}
+
+function syncToFirebase(silent=false){
+  if(!fbDb){ if(!silent) showToast('❌ غير متصل بـ Firebase','red'); return; }
+  const data = { DB, adminPass, updatedAt: Date.now() };
+  fbDb.ref('sportsSystem').set(data)
+    .then(()=>{
+      const info=document.getElementById('fbSyncInfo');
+      if(info) info.textContent=`☁️ آخر رفع: ${new Date().toLocaleString('ar-SA')}`;
+      if(!silent) showToast('✅ تم رفع البيانات للسحابة');
+    })
+    .catch(err=>{ if(!silent) showToast('❌ فشل الرفع: '+err.message,'red'); });
+}
+
+function pullFromFirebase(silent=false){
+  if(!fbDb){ if(!silent) showToast('❌ غير متصل','red'); return; }
+  fbDb.ref('sportsSystem').once('value').then(snap=>{
+    const data=snap.val();
+    if(!data){ if(!silent) showToast('☁️ لا توجد بيانات في السحابة'); return; }
+    if(!silent && !confirm('جلب البيانات من السحابة؟ سيتم استبدال البيانات الحالية.')) return;
+    DB = data.DB || DB;
+    if(data.adminPass) adminPass = data.adminPass;
+    renderAdmin();
+    const info=document.getElementById('fbSyncInfo');
+    if(info) info.textContent=`⬇️ آخر جلب: ${new Date().toLocaleString('ar-SA')}`;
+    if(!silent) showToast('✅ تم جلب البيانات من السحابة');
+  }).catch(err=>{ if(!silent) showToast('❌ فشل الجلب: '+err.message,'red'); });
+}
+
+function disconnectFirebase(){
+  if(fbAutoSync) clearInterval(fbAutoSync);
+  if(fbDb) fbDb.ref('.info/connected').off();
+  if(fbApp) fbApp.delete().catch(()=>{});
+  fbApp=null; fbDb=null; fbConnected=false;
+  const status=document.getElementById('fbStatus');
+  if(status) status.innerHTML='☁️ <span>غير متصل</span>';
+  const syncStatus=document.getElementById('syncStatus');
+  if(syncStatus) syncStatus.textContent='إدارة الفعاليات والمكلفين';
+  ['fbSyncBtn','fbPullBtn','fbDisconnectBtn'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display='none';
+  });
+  document.getElementById('fb_msg').textContent='';
+  showToast('🔌 تم قطع الاتصال');
+}
+
+// مزامنة تلقائية عند أي تغيير في البيانات
+function autoSyncIfConnected(){ if(fbConnected && fbDb) syncToFirebase(true); }
+
+// ══════════ CHANGE PASSWORD ══════════
+function changePass(){
+  const cur=gv('cp_cur'),nw=gv('cp_new'),cnf=gv('cp_cnf'),msg=document.getElementById('cp_msg');
+  if(cur!==adminPass){msg.style.color='var(--red)';msg.textContent='❌ كلمة المرور الحالية خاطئة';return;}
+  if(nw.length<4){msg.style.color='var(--red)';msg.textContent='❌ قصيرة جداً (4 أحرف على الأقل)';return;}
+  if(nw!==cnf){msg.style.color='var(--red)';msg.textContent='❌ غير متطابقة';return;}
+  adminPass=nw;
+  ['cp_cur','cp_new','cp_cnf'].forEach(id=>document.getElementById(id).value='');
+  msg.style.color='var(--green2)';msg.textContent='✅ تم التغيير بنجاح';
+  setTimeout(()=>msg.textContent='',3000);
+}
+
+// ══════════ MODAL HELPERS ══════════
+function openM(id){ document.getElementById(id).classList.add('open'); }
+function closeM(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.moverlay').forEach(o=>{ o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }); });
+
+// ══════════ HELPERS ══════════
+function gv(id){ return document.getElementById(id)?.value||''; }
+function showToast(msg,type='green'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.background=type==='red'?'var(--red)':'var(--green)';
+  t.style.display='block'; setTimeout(()=>t.style.display='none',2800);
+}
+
+// ENTER key on login
+['adminPass','staffPass','supCode'].forEach(id=>{ document.getElementById(id)?.addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); }); });
+
+// Mobile fix
+const s=document.createElement('style');
+s.textContent='@media(max-width:700px){#fieldsCols{grid-template-columns:1fr!important}}';
+document.head.appendChild(s);
+
+// Init fields tab button
+document.getElementById('ftab-sports').style.cssText='background:rgba(255,255,255,.08);border:1px solid #66bb6a;color:#66bb6a;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:Cairo,sans-serif;font-size:.76rem;font-weight:700';
+</script>
+</body>
+</html>
